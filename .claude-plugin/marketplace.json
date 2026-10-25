@@ -1,0 +1,27 @@
+{
+  "name": "launchpad",
+  "version": "1.0.0",
+  "metadata": {
+    "description": "A plugin that allows you to bootstrap applications using claude code"
+  },
+  "owner": {
+    "name": "Madhava Krishna Nali",
+    "email": "krishna4asp@gmail.com"
+  },
+  "plugin": [
+    {
+      "name": "launchpad",
+      "version": "1.0.0",
+      "license": "MIT",
+      "description": "skills, agents, slash commands, rules, and more for launching applications and performing system actions.",
+      "keywords": [
+        "dotnet",
+        "csharp",
+        "aspnet",
+        "efcore",
+        "slash-commands",
+        "rules"
+      ]
+    }
+  ]
+}

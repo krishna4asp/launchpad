@@ -1,0 +1,38 @@
+{
+  "name": "launchpad",
+  "version": "1.0.0",
+  "description": "A plugin that allows you to launch applications and perform system actions.",
+  "author": {
+    "name": "Madhava Krishna Nali",
+    "email": "krishna4asp@gmail.com"
+  },
+  "homepage": "https://github.com/krishna4asp/launchpad",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/krishna4asp/launchpad.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "dotnet",
+    "csharp",
+    "aspnet",
+    "efcore",
+    "architecture",
+    "design patterns",
+    "vertical slice architecture",
+    "cqrs",
+    "scaffolding",
+    "software development",
+    "clean architecture",
+    "spec driven development",
+    "system actions",
+    "domain driven design",
+    "software engineering",
+    "code-review",
+    "code-quality",
+    "code-refactoring",
+    "code-optimization",
+    "unit-testing",
+    "integration-testing"
+  ]
+}
