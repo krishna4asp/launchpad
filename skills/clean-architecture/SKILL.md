@@ -17,7 +17,7 @@ description: >
 2. **Domain owns the rules** — Business logic lives in the Domain layer as entity methods, domain services, or specifications. The Domain layer has no knowledge of databases, HTTP, or any framework — only pure C# and .NET primitives.
 3. **Use cases are the unit of work** — Each use case (command or query) is a single class in the Application layer. It orchestrates domain objects, persists through abstractions, and returns a result. No "service" classes with 20 methods.
 4. **Infrastructure is a plugin** — EF Core, external APIs, email senders, file storage — all live in Infrastructure and implement interfaces defined in Application or Domain. Swap implementations without touching business logic.
-5. **The API layer is thin** — Endpoints map HTTP to use cases and use cases to HTTP responses. No business logic in endpoints.
+5. **The API layer is thin** — Controllers map HTTP to use cases and use cases to HTTP responses. No business logic in controllers.
 
 ## Patterns
 
@@ -68,8 +68,11 @@ src/
     DependencyInjection.cs         # AddInfrastructure extension
 
   MyApp.Api/
-    Endpoints/
-      OrderEndpoints.cs            # Thin, maps HTTP ↔ use cases
+    Controllers/
+      OrdersController.cs          # Thin, maps HTTP ↔ use cases
+    Contracts/
+      Orders/
+        CreateOrderRequest.cs      # HTTP request DTO, mapped to a command
     Program.cs
 ```
 
@@ -222,54 +225,77 @@ public class Order : Entity
 }
 ```
 
-### Thin Endpoint Wiring (IEndpointGroup Auto-Discovery)
+### Thin Controllers
 
-Every endpoint group implements `IEndpointGroup` and is auto-discovered via `app.MapEndpoints()`. Program.cs never changes when adding new endpoints. See the **minimal-api** skill for the full `IEndpointGroup` interface and `EndpointExtensions` setup.
+Controllers inherit `ControllerBase` and use `[ApiController]` with attribute routing. Each action takes a request DTO from the `Api/Contracts` folder, maps it to a command or query, sends it through the mediator, and maps the result to an HTTP response. Keeping request DTOs separate from commands means the HTTP contract can change without touching the Application layer.
 
 ```csharp
-// Api/Endpoints/OrderEndpoints.cs
-public sealed class OrderEndpoints : IEndpointGroup
+// Api/Contracts/Orders/CreateOrderRequest.cs
+public sealed record CreateOrderRequest(
+    string CustomerId,
+    List<OrderItemDto> Items);
+```
+
+```csharp
+// Api/Controllers/OrdersController.cs
+[ApiController]
+[Route("api/orders")]
+public sealed class OrdersController : ControllerBase
 {
-    public void Map(IEndpointRouteBuilder app)
+    private readonly ISender _mediator;
+
+    public OrdersController(ISender mediator) => _mediator = mediator;
+
+    [HttpPost]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateOrderRequest request, CancellationToken ct)
     {
-        var group = app.MapGroup("/api/orders").WithTags("Orders");
+        var command = new CreateOrderCommand(request.CustomerId, request.Items);
 
-        group.MapPost("/", CreateOrder)
-            .WithName("CreateOrder");
+        var result = await _mediator.Send(command, ct);
 
-        group.MapGet("/{id:guid}", GetOrder)
-            .WithName("GetOrder");
-
-        group.MapGet("/", ListOrders)
-            .WithName("ListOrders");
-    }
-
-    private static async Task<IResult> CreateOrder(
-        CreateOrderCommand command, ISender sender, CancellationToken ct)
-    {
-        var result = await sender.Send(command, ct);
         return result.IsSuccess
-            ? TypedResults.Created($"/api/orders/{result.Value}", result.Value)
-            : result.ToProblemDetails();
+            ? CreatedAtAction(nameof(GetById), new { id = result.Value }, result.Value)
+            : Problem(detail: result.Error, statusCode: StatusCodes.Status400BadRequest);
     }
 
-    private static async Task<IResult> GetOrder(
-        Guid id, ISender sender, CancellationToken ct)
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var result = await sender.Send(new GetOrderQuery(id), ct);
+        var result = await _mediator.Send(new GetOrderQuery(id), ct);
+
         return result.IsSuccess
-            ? TypedResults.Ok(result.Value)
-            : TypedResults.NotFound();
+            ? Ok(result.Value)
+            : NotFound();
     }
 
-    private static async Task<IResult> ListOrders(
-        [AsParameters] ListOrdersQuery query, ISender sender, CancellationToken ct)
+    [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<OrderDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> List([FromQuery] ListOrdersQuery query, CancellationToken ct)
     {
-        var result = await sender.Send(query, ct);
-        return TypedResults.Ok(result);
+        var result = await _mediator.Send(query, ct);
+        return Ok(result);
     }
 }
 ```
+
+Register controllers in `Program.cs`:
+
+```csharp
+// Api/Program.cs
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+app.MapControllers();
+```
+
+To return 409 (or other codes) for specific failures, map the `Result` error to a status code in one shared helper (see the **error-handling** skill) instead of branching in every action.
 
 ### Infrastructure DI Registration
 
@@ -325,31 +351,36 @@ public class OrderService(AppDbContext db) { } // Domain depends on Infrastructu
 // Application/Common/Interfaces/IAppDbContext.cs (preferred)
 ```
 
-### Fat Endpoints
+### Fat Controllers
 
 ```csharp
-// BAD — business logic in the endpoint
-app.MapPost("/orders", async (CreateOrderRequest req, AppDbContext db) =>
+// BAD — business logic and DbContext in the controller
+[HttpPost]
+public async Task<IActionResult> Create([FromBody] CreateOrderRequest request)
 {
-    var order = new Order { CustomerId = req.CustomerId };
-    foreach (var item in req.Items)
+    var order = new Order { CustomerId = request.CustomerId };
+    foreach (var item in request.Items)
     {
         order.Items.Add(new OrderItem { ProductId = item.ProductId, Quantity = item.Quantity });
     }
     order.Total = order.Items.Sum(i => i.Quantity * i.UnitPrice);
-    db.Orders.Add(order);
-    await db.SaveChangesAsync();
-    return TypedResults.Created($"/orders/{order.Id}", order);
-});
+    _db.Orders.Add(order);
+    await _db.SaveChangesAsync();
+    return Created($"/api/orders/{order.Id}", order);
+}
 
-// GOOD — endpoint delegates to a use case
-app.MapPost("/orders", async (CreateOrderCommand command, ISender sender, CancellationToken ct) =>
+// GOOD — controller maps the request to a command and delegates to a use case
+[HttpPost]
+public async Task<IActionResult> Create([FromBody] CreateOrderRequest request, CancellationToken ct)
 {
-    var result = await sender.Send(command, ct);
+    var command = new CreateOrderCommand(request.CustomerId, request.Items);
+
+    var result = await _mediator.Send(command, ct);
+
     return result.IsSuccess
-        ? TypedResults.Created($"/orders/{result.Value}", result.Value)
-        : result.ToProblemDetails();
-});
+        ? CreatedAtAction(nameof(GetById), new { id = result.Value }, result.Value)
+        : Problem(detail: result.Error, statusCode: StatusCodes.Status400BadRequest);
+}
 ```
 
 ### Repository for Every Entity
@@ -373,5 +404,6 @@ public interface ICustomerRepository { Task<Customer?> GetByIdAsync(Guid id); }
 | When to add a Domain layer     | Business rules involve invariants across entity groups                             |
 | IAppDbContext vs repositories  | Prefer IAppDbContext; add repository only for complex reusable queries             |
 | Mediator vs raw handlers in CA | Mediator for pipeline behaviors (validation, logging); raw handlers for simplicity |
+| Controllers vs Minimal APIs    | Controllers by default (attribute routing, `[ProducesResponseType]`, filters)      |
 | When to add Domain events      | When side effects (notifications, audit) should be decoupled from the main flow    |
 | Evolving from VSA to CA        | When handlers start needing shared domain logic that does not belong in Common/    |
