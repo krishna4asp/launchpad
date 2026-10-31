@@ -76,7 +76,7 @@ Map questionnaire answers to architecture recommendations:
 | Profile                                                                      | Recommended Architecture        | Why                                                                                                     |
 | ---------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Low domain complexity, small team, short lifetime                            | **Vertical Slice Architecture** | Minimal ceremony, fast feature delivery, easy to understand                                             |
-| Low-medium domain complexity, any team size, API-focused                     | **Vertical Slice Architecture** | Feature cohesion, one file per operation, natural fit for minimal APIs                                  |
+| Low-medium domain complexity, any team size, API-focused                     | **Vertical Slice Architecture** | Feature cohesion, one file per operation, natural fit for thin resource controllers                     |
 | Medium domain complexity, medium team, long lifetime                         | **Clean Architecture**          | Enforced boundaries via project references, testable domain, clear dependency direction                 |
 | High domain complexity, specialized vocabulary, complex invariants           | **DDD + Clean Architecture**    | Aggregates protect invariants, value objects model domain concepts, domain events decouple side effects |
 | Multiple bounded contexts, team-per-domain, independent deployment potential | **Modular Monolith**            | Module isolation, independent data stores, evolution path to microservices                              |
@@ -100,7 +100,8 @@ Organize by feature, not by layer. Each operation is a self-contained slice.
 ```
 src/MyApp.Api/
   Features/
-    Orders/CreateOrder.cs    # Request + Handler + Response + Endpoint
+    Orders/OrdersController.cs  # Thin HTTP entry point
+    Orders/CreateOrder.cs       # Request + Handler + Response
     Orders/GetOrder.cs
   Common/
     Behaviors/ValidationBehavior.cs
@@ -119,7 +120,7 @@ src/
   MyApp.Domain/              # Entities, interfaces, domain logic
   MyApp.Application/         # Use cases, DTOs, validation
   MyApp.Infrastructure/      # EF Core, external services
-  MyApp.Api/                 # Endpoints, middleware
+  MyApp.Api/                 # Controllers, middleware
 ```
 
 **Best for:** Medium complexity, long-lived systems, teams familiar with layered patterns.
@@ -134,7 +135,7 @@ src/
   MyApp.Domain/              # Aggregates, value objects, domain events, domain services
   MyApp.Application/         # Use cases orchestrating aggregates
   MyApp.Infrastructure/      # Persistence, external service adapters
-  MyApp.Api/                 # Thin endpoints
+  MyApp.Api/                 # Thin controllers
 ```
 
 **Best for:** Complex domains, specialized vocabulary, strict invariants, experienced teams.
@@ -179,10 +180,11 @@ src/MyApp.Application/Products/CreateProduct/CreateProductCommand.cs
 src/MyApp.Application/Products/CreateProduct/CreateProductHandler.cs
 src/MyApp.Application/Products/CreateProduct/CreateProductValidator.cs
 src/MyApp.Infrastructure/Persistence/ProductRepository.cs
-src/MyApp.Api/Endpoints/ProductEndpoints.cs
+src/MyApp.Api/Controllers/ProductsController.cs
 
-// GOOD — VSA: 1 file for a simple CRUD feature
+// GOOD — VSA: 1 file per operation + an action on the feature controller
 src/MyApp.Api/Features/Products/CreateProduct.cs
+src/MyApp.Api/Features/Products/ProductsController.cs
 ```
 
 ### DDD Everywhere

@@ -18,7 +18,7 @@ description: >
 2. **JWT for APIs, cookies for web apps** — APIs use Bearer token authentication; Blazor/MVC apps use cookie authentication.
 3. **Policy-based authorization over roles** — Named policies (`[Authorize(Policy = "AdminOnly")]`) are testable, composable, and more expressive than `[Authorize(Roles = "Admin")]`.
 4. **Never store secrets in code** — Use user secrets in development. In production use AWS Systems Manager Parameter Store (SecureString) or AWS Secrets Manager, loaded through the configuration system (see the `configuration` skill), or environment variables.
-5. **REST API controllers** — All endpoint samples use attribute-routed controllers (`[ApiController]`, `ControllerBase`, `[Authorize]`, `[AllowAnonymous]`), not Minimal APIs. Put `[Authorize]` on the controller class so every action inherits it, then tighten or relax individual actions.
+5. **REST API controllers** — All endpoint samples use attribute-routed controllers (`[ApiController]`, `ControllerBase`, `[Authorize]`, `[AllowAnonymous]`) — see the `controller-based-apis` skill. Put `[Authorize]` on the controller class so every action inherits it, then tighten or relax individual actions.
 
 ## Patterns
 

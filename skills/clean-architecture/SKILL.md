@@ -404,6 +404,6 @@ public interface ICustomerRepository { Task<Customer?> GetByIdAsync(Guid id); }
 | When to add a Domain layer     | Business rules involve invariants across entity groups                             |
 | IAppDbContext vs repositories  | Prefer IAppDbContext; add repository only for complex reusable queries             |
 | Mediator vs raw handlers in CA | Mediator for pipeline behaviors (validation, logging); raw handlers for simplicity |
-| Controllers vs Minimal APIs    | Controllers by default (attribute routing, `[ProducesResponseType]`, filters)      |
+| API style                      | Controllers (`[ApiController]`, `ActionResult<T>`, `[ProducesResponseType]`) — see `controller-based-apis` |
 | When to add Domain events      | When side effects (notifications, audit) should be decoupled from the main flow    |
 | Evolving from VSA to CA        | When handlers start needing shared domain logic that does not belong in Common/    |

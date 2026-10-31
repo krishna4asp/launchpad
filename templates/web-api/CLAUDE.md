@@ -9,7 +9,7 @@ This is a .NET 10 REST API. Choose an architecture that fits your domain complex
 ## Tech Stack
 
 - **.NET 10** / C# 14
-- **ASP.NET Core Minimal APIs** — `IEndpointGroup` per feature with `app.MapEndpoints()` auto-discovery
+- **ASP.NET Core controllers** — one `[ApiController]` per resource, discovered by `app.MapControllers()`
 - **Entity Framework Core** — default ORM with PostgreSQL/SQL Server
 - **Mediator** (source-generated, MIT) or Wolverine or raw handlers — command/query dispatch
 - **FluentValidation** — request validation
@@ -27,6 +27,7 @@ src/
   [ProjectName].Api/
     Features/
       [Feature]/
+        [Feature]Controller.cs  # Thin controller dispatching to the slices
         [Operation].cs          # Command/Query + Handler + Response
     Common/
       Behaviors/                # Mediator pipeline behaviors
@@ -42,7 +43,7 @@ src/
   [ProjectName].Domain/         # Entities, interfaces, domain logic (no dependencies)
   [ProjectName].Application/    # Use cases, DTOs, validation (references Domain)
   [ProjectName].Infrastructure/ # EF Core, external services (references Application + Domain)
-  [ProjectName].Api/            # Endpoints, middleware (references all)
+  [ProjectName].Api/            # Controllers, middleware (references all)
 ```
 
 ### Option C: DDD + Clean Architecture (best for complex domains)
@@ -52,7 +53,7 @@ src/
   [ProjectName].Domain/         # Aggregates, value objects, domain events, domain services
   [ProjectName].Application/    # Use cases orchestrating aggregates
   [ProjectName].Infrastructure/ # Persistence, external service adapters
-  [ProjectName].Api/            # Thin endpoints
+  [ProjectName].Api/            # Thin controllers
 ```
 
 ### Tests
@@ -85,7 +86,7 @@ Load these dotnet-claude-kit skills for context:
 - `vertical-slice` — Feature folder structure and handler patterns (if using VSA)
 - `clean-architecture` — Layered project structure with dependency inversion (if using CA)
 - `ddd` — Aggregates, value objects, domain events (if using DDD)
-- `minimal-api` — Endpoint routing, TypedResults, OpenAPI metadata
+- `controller-based-apis` — `[ApiController]` controllers, attribute routing, `ActionResult<T>`, OpenAPI metadata
 - `ef-core` — DbContext patterns, query optimization, migrations
 - `testing` — xUnit v3, WebApplicationFactory, Testcontainers
 - `error-handling` — Result pattern, ProblemDetails
@@ -144,13 +145,13 @@ dotnet format --verify-no-changes
 
 Do NOT generate code that:
 
-- Defines endpoints in Program.cs — use `IEndpointGroup` per feature with `app.MapEndpoints()` auto-discovery
-- Manually wires MapGroup calls in Program.cs — Program.cs should never change when adding endpoints
+- Defines endpoints in Program.cs — use `[ApiController]` controllers discovered by `app.MapControllers()`; Program.cs should never change when adding endpoints
+- Puts business logic or `DbContext` calls in controllers — keep actions thin and dispatch to a handler
 - Uses `DateTime.Now` — use `TimeProvider` injection instead
 - Creates `new HttpClient()` — use `IHttpClientFactory`
 - Uses `async void` — always return `Task`
 - Blocks with `.Result` or `.Wait()` — await instead
-- Uses `Results.Ok()` — use `TypedResults.Ok()` for OpenAPI
+- Returns untyped `IActionResult` without `[ProducesResponseType]` — use `ActionResult<T>` for OpenAPI
 - Returns domain entities from endpoints — always map to response DTOs
 - Creates repository abstractions over EF Core — use DbContext directly
 - Uses in-memory database for tests — use Testcontainers

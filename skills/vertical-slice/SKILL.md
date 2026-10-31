@@ -2,8 +2,8 @@
 name: vertical-slice
 description: >
   Vertical Slice Architecture (VSA) for .NET applications — one of several
-  supported architectures in dotnet-claude-kit. Covers feature folders, endpoint
-  grouping, and handler patterns for Mediator, Wolverine, and raw handler classes.
+  supported architectures in dotnet-claude-kit. Covers feature folders, thin
+  resource controllers, and handler patterns for Mediator, Wolverine, and raw handler classes.
   Load this skill when the architecture-advisor recommends VSA, when working in
   an existing VSA codebase, when adding features to a feature-folder project,
   or when discussing vertical slice patterns, feature folders, or handler patterns.
@@ -13,10 +13,11 @@ description: >
 
 ## Core Principles
 
-1. **Organize by feature, not by layer** — Each feature is a self-contained vertical slice containing its endpoint, handler, request/response types, and validation. No more jumping between Controllers/, Services/, Repositories/ folders.
+1. **Organize by feature, not by layer** — Each operation is a self-contained vertical slice containing its handler, request/response types, and validation. The feature folder holds one thin resource controller (`OrdersController`) that dispatches HTTP requests to those slices. No layer folders like Services/ or Repositories/.
 2. **Minimize cross-feature coupling** — Features should not reference each other directly. Shared concerns go in a `Common/` or `Shared/` directory.
-3. **One file per feature is fine** — A simple CRUD endpoint doesn't need 5 files spread across layers. Start with everything in one file, extract only when complexity demands it.
+3. **One file per operation is fine** — A simple CRUD operation doesn't need 5 files spread across layers. Start with command, handler and response in one file, plus one action on the feature's controller; extract only when complexity demands it.
 4. **The handler is the unit of work** — Each handler does one thing. No god-services with 20 methods.
+5. **Controllers stay thin** — An action maps HTTP to a command/query and the result back to HTTP (see the `controller-based-apis` skill). Business logic and data access live in the handler.
 
 ## Patterns
 
@@ -27,7 +28,8 @@ src/
   MyApp.Api/
     Features/
       Orders/
-        CreateOrder.cs          # Request, Handler, Response, Endpoint — all in one file
+        OrdersController.cs     # Thin HTTP entry point for the Orders slices
+        CreateOrder.cs          # Command, Validator, Handler, Response — all in one file
         GetOrder.cs
         ListOrders.cs
         CancelOrder.cs
@@ -91,23 +93,32 @@ public static class CreateOrder
 // Registration in Program.cs or module DI
 builder.Services.AddMediator();
 
-// Features/Orders/OrderEndpoints.cs — auto-discovered via IEndpointGroup
-public sealed class OrderEndpoints : IEndpointGroup
+// Features/Orders/OrdersController.cs — discovered by app.MapControllers()
+[Route("api/orders")]
+[Tags("Orders")]
+[Authorize]
+public sealed class OrdersController(ISender sender) : ApiControllerBase
 {
-    public void Map(IEndpointRouteBuilder app)
+    [HttpPost(Name = "CreateOrder")]
+    [ProducesResponseType<CreateOrder.OrderResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CreateOrder.OrderResponse>> Create(
+        CreateOrder.Command command, CancellationToken ct)
     {
-        var group = app.MapGroup("/api/orders").WithTags("Orders");
+        // CreateOrder.Validator runs first via the global FluentValidationFilter (error-handling skill)
+        var result = await sender.Send(command, ct);
+        return result.IsSuccess
+            ? CreatedAtRoute("GetOrder", new { id = result.Value.Id }, result.Value)
+            : ToProblemDetails(result);
+    }
 
-        group.MapPost("/", async (CreateOrder.Command command, ISender sender, CancellationToken ct) =>
-        {
-            var result = await sender.Send(command, ct);
-            return result.IsSuccess
-                ? TypedResults.Created($"/api/orders/{result.Value.Id}", result.Value)
-                : result.ToProblemDetails();
-        })
-        .WithName("CreateOrder").Produces<CreateOrder.OrderResponse>(201)
-        .ProducesValidationProblem()
-        .AddEndpointFilter<ValidationFilter<CreateOrder.Command>>();
+    [HttpGet("{id:guid}", Name = "GetOrder")]
+    [ProducesResponseType<GetOrder.OrderResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<GetOrder.OrderResponse>> GetById(Guid id, CancellationToken ct)
+    {
+        var result = await sender.Send(new GetOrder.Query(id), ct);
+        return result.IsSuccess ? result.Value : ToProblemDetails(result, StatusCodes.Status404NotFound);
     }
 }
 ```
@@ -140,6 +151,17 @@ public static class CreateOrder
         return Result.Success(new OrderResponse(order.Id, order.Total, order.CreatedAt));
     }
 }
+
+// Features/Orders/OrdersController.cs — OrdersController(IMessageBus bus) : ApiControllerBase
+// Dispatch through Wolverine's IMessageBus (see the messaging skill)
+[HttpPost(Name = "CreateOrder")]
+public async Task<ActionResult<CreateOrder.OrderResponse>> Create(CreateOrder.Command command, CancellationToken ct)
+{
+    var result = await bus.InvokeAsync<Result<CreateOrder.OrderResponse>>(command, ct);
+    return result.IsSuccess
+        ? CreatedAtRoute("GetOrder", new { id = result.Value.Id }, result.Value)
+        : ToProblemDetails(result);
+}
 ```
 
 ### Pattern C: Raw Handler Classes (No Library)
@@ -157,7 +179,7 @@ public static class CreateOrder
 
     public record OrderResponse(Guid Id, decimal Total, DateTime CreatedAt);
 
-    internal class Handler(AppDbContext db, TimeProvider clock)
+    public sealed class Handler(AppDbContext db, TimeProvider clock) // public: injected into a public controller
     {
         public async Task<Result<OrderResponse>> ExecuteAsync(Command command, CancellationToken ct)
         {
@@ -170,15 +192,28 @@ public static class CreateOrder
     }
 }
 
-// Endpoint wiring — Result maps to HTTP response
-group.MapPost("/", async (CreateOrder.Command command, CreateOrder.Handler handler, CancellationToken ct) =>
+// Registration
+builder.Services.AddScoped<CreateOrder.Handler>();
+
+// Features/Orders/OrdersController.cs — Result maps to HTTP response
+[Route("api/orders")]
+public sealed class OrdersController(CreateOrder.Handler createOrder) : ApiControllerBase
 {
-    var result = await handler.ExecuteAsync(command, ct);
-    return result.IsSuccess
-        ? TypedResults.Created($"/api/orders/{result.Value.Id}", result.Value)
-        : result.ToProblemDetails();
-});
+    [HttpPost(Name = "CreateOrder")]
+    [ProducesResponseType<CreateOrder.OrderResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CreateOrder.OrderResponse>> Create(
+        CreateOrder.Command command, CancellationToken ct)
+    {
+        var result = await createOrder.ExecuteAsync(command, ct);
+        return result.IsSuccess
+            ? CreatedAtRoute("GetOrder", new { id = result.Value.Id }, result.Value)
+            : ToProblemDetails(result);
+    }
+}
 ```
+
+When a controller needs many handlers, inject the one only a single action uses with `[FromServices]` on that action instead of growing the constructor.
 
 ### Adding Module Boundaries (Optional)
 
@@ -189,19 +224,43 @@ src/
   MyApp.Api/                      # Host — wires modules together
     Program.cs
     Modules/
-      ModuleExtensions.cs         # app.MapOrderModule(), app.MapCatalogModule()
-  MyApp.Orders/                   # Module — own features, own DbContext
+      ModuleExtensions.cs         # AddControllers().AddOrdersModule().AddCatalogModule()
+  MyApp.Orders/                   # Module — own features, controllers, DbContext
     Features/
-      CreateOrder.cs
+      Orders/
+        OrdersController.cs
+        CreateOrder.cs
     Persistence/
       OrdersDbContext.cs
-    OrdersModule.cs               # IServiceCollection + IEndpointRouteBuilder extensions
+    OrdersModule.cs               # Service registration + AddApplicationPart for its controllers
   MyApp.Catalog/                  # Module
     Features/
       CreateProduct.cs
     Persistence/
       CatalogDbContext.cs
     CatalogModule.cs
+```
+
+Controllers in a module's class library are not discovered by `MapControllers()` until the host adds that assembly as an application part:
+
+```csharp
+// MyApp.Orders/OrdersModule.cs
+public static class OrdersModule
+{
+    public static IMvcBuilder AddOrdersModule(this IMvcBuilder mvc, IConfiguration config)
+    {
+        mvc.Services.AddDbContext<OrdersDbContext>(o => o.UseNpgsql(config.GetConnectionString("Orders")));
+        mvc.AddApplicationPart(typeof(OrdersModule).Assembly); // exposes OrdersController
+        return mvc;
+    }
+}
+
+// MyApp.Api/Program.cs
+builder.Services.AddControllers()
+    .AddOrdersModule(builder.Configuration)
+    .AddCatalogModule(builder.Configuration);
+// ...
+app.MapControllers();
 ```
 
 Modules communicate via:
@@ -293,6 +352,6 @@ Features/Orders/CancelOrder.cs
 | Want full control, no dependencies     | Pattern C — Raw handler classes                                              |
 | Existing MediatR codebase with license | Keep MediatR if licensed; otherwise migrate to Mediator (near-identical API) |
 | Monolith growing complex               | Add module boundaries, keep VSA within each module                           |
-| Simple CRUD feature                    | Single file: request + handler + endpoint                                    |
+| Simple CRUD feature                    | Single file (command + handler + response) + one action on the feature's controller |
 | Complex feature (saga, events)         | Multiple files in feature folder, still colocated                            |
 | Sharing logic between features         | Extract to `Common/` — not to another feature                                |
