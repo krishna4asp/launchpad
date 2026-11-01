@@ -31,7 +31,8 @@ HIGH-CONFIDENCE PATTERNS (almost always a real secret):
 - "Bearer " followed by a base64 token in source code
 - "-----BEGIN PRIVATE KEY-----" / "-----BEGIN RSA PRIVATE KEY-----"
 - AWS: "AKIA" + 16 alphanumeric characters
-- Azure Storage/Service Bus key patterns
+- AWS: "aws_secret_access_key" / "AWS_SECRET_ACCESS_KEY" assigned a 40-char value;
+  "ASIA" temporary key IDs paired with a session token
 
 MEDIUM-CONFIDENCE (need context):
 - "ApiKey"/"Secret"/"Token" variables with string literal assignments
@@ -49,7 +50,7 @@ FALSE-POSITIVE INDICATORS (skip):
 // BAD — hardcoded connection string
 var connectionString = "Server=prod-db;Database=Orders;User=admin;Password=S3cret!";
 
-// GOOD — configuration; secrets live in user-secrets (dev) or Key Vault/env (prod)
+// GOOD — configuration; secrets live in user-secrets (dev) or AWS Secrets Manager / Parameter Store / env (prod)
 var connectionString = builder.Configuration.GetConnectionString("OrdersDb");
 ```
 
@@ -166,7 +167,7 @@ CHECKS:
 3. Sensitive data stored plaintext — API keys, tokens in the database
    Fix: IDataProtector before storage; never roll your own encryption
 4. Secrets in appsettings.json
-   Fix: user secrets (dev), Key Vault / environment variables (prod)
+   Fix: user secrets (dev), AWS Secrets Manager / Parameter Store / environment variables (prod)
 ```
 
 ```csharp

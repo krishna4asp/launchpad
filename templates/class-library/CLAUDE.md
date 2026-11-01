@@ -122,7 +122,7 @@ Load these dotnet-claude-kit skills for context:
 - `architecture-advisor` -- Architecture guidance for structuring the library
 - `project-structure` -- Solution layout, Directory.Build.props, central package management
 - `testing` -- xUnit v3, test patterns, snapshot testing
-- `ci-cd` -- GitHub Actions / Azure DevOps pipelines with pack + push stages
+- `ci-cd` -- GitHub Actions pipelines with pack + push stages (AWS CodeArtifact via OIDC)
 - `workflow-mastery` -- Parallel worktrees, verification loops, subagent patterns, context discipline
 - `instinct-system` -- Capture corrections, instincts, and discoveries as persistent learning
 - `wrap-up` -- Structured session handoff to `.claude/handoff.md`
@@ -158,8 +158,9 @@ dotnet pack src/[ProjectName] -c Release -o ./nupkg
 # Push to NuGet.org
 dotnet nuget push ./nupkg/*.nupkg --api-key <API_KEY> --source https://api.nuget.org/v3/index.json
 
-# Push to a private feed
-dotnet nuget push ./nupkg/*.nupkg --api-key <API_KEY> --source https://pkgs.dev.azure.com/<org>/_packaging/<feed>/nuget/v3/index.json
+# Push to a private feed (AWS CodeArtifact) — login registers the <domain>/<repository> source with a 12h token
+aws codeartifact login --tool dotnet --domain <domain> --domain-owner <account-id> --repository <repository>
+dotnet nuget push ./nupkg/*.nupkg --source <domain>/<repository>
 
 # Format check
 dotnet format --verify-no-changes

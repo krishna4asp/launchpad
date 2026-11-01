@@ -14,7 +14,7 @@ description: >
 
 ## Core Principles
 
-1. **AppHost orchestrates; it is never deployed itself** — Aspire's core job is the local development experience: starting services, databases, and message brokers together. Modern Aspire also generates deployment assets (`aspire publish` for docker-compose/Kubernetes manifests, `aspire deploy` for Azure Container Apps) — but the AppHost process itself stays a dev/build-time tool, not a production runtime.
+1. **AppHost orchestrates; it is never deployed itself** — Aspire's core job is the local development experience: starting services, databases, and message brokers together. Modern Aspire also generates deployment assets (`aspire publish` for docker-compose/Kubernetes manifests you run on Amazon ECS or EKS; the `Aspire.Hosting.AWS` integration provisions AWS resources via CloudFormation/CDK) — but the AppHost process itself stays a dev/build-time tool, not a production runtime.
 2. **Service defaults are your baseline** — The `ServiceDefaults` project configures OpenTelemetry, health checks, and resilience for all services in one place.
 3. **Use Aspire integrations** — Aspire has built-in integrations for PostgreSQL, Redis, RabbitMQ, SQL Server, and more. They handle connection strings, health checks, and tracing automatically.
 4. **The dashboard is your observability tool** — Use the Aspire dashboard for local development tracing, logging, and metrics instead of setting up Seq/Grafana locally.
@@ -135,8 +135,8 @@ MyApp.slnx
 // The AppHost is a dev/build-time tool, not a production runtime
 
 // GOOD — deploy the generated assets, not the AppHost:
-//   aspire publish  → docker-compose / Kubernetes manifests from the app model
-//   aspire deploy   → direct deployment (e.g., Azure Container Apps)
+//   aspire publish      → docker-compose / Kubernetes manifests from the app model (run on ECS / EKS)
+//   Aspire.Hosting.AWS  → provision AWS resources (CloudFormation / CDK) from the app model
 ```
 
 ### Don't Hardcode Connection Strings with Aspire
