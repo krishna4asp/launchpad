@@ -294,7 +294,7 @@ logger.LogInformation("Request: {@Request}", httpContext.Request);
 | Scenario                  | Recommendation                                            |
 | ------------------------- | --------------------------------------------------------- |
 | Application logging       | Serilog with `AddSerilog()` and appsettings.json          |
-| Log storage (development) | Seq (free single-user) or Aspire Dashboard                |
+| Log storage (development) | Seq (free single-user) or console                         |
 | Log storage (production)  | Seq, Elasticsearch (Elastic sink), or OTLP backend        |
 | Request logging           | `UseSerilogRequestLogging()` (replaces per-request noise) |
 | Scoped properties         | `LogContext.PushProperty()` in middleware                 |
