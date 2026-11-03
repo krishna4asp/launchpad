@@ -24,7 +24,7 @@ This template configures Claude Code to:
 - Use .NET 10 / C# 14 modern patterns
 - Use global usings if the namespace used in more than one file
 - Use EF Core directly (no repository pattern)
-- Write integration tests with `WebApplicationFactory` + Testcontainers
+- Write integration tests with `WebApplicationFactory` + SQLite in-memory
 - Use the Result pattern for error handling
 - Follow structured logging with Serilog
 

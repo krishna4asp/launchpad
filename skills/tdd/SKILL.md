@@ -2,7 +2,7 @@
 name: tdd
 description: >
   Guided test-driven development workflow for .NET 10 using xUnit v3,
-  WebApplicationFactory, Testcontainers, and Verify snapshots. Follows the
+  WebApplicationFactory, SQLite in-memory, and Verify snapshots. Follows the
   strict red-green-refactor cycle. Use when: "TDD", "test-driven", "let's TDD
   this", "red green refactor", "write the test first", or when building a
   feature with clear acceptance criteria.
@@ -21,7 +21,7 @@ Every cycle uses the .NET testing stack:
 
 - **xUnit v3** -- Test framework with `[Fact]` and `[Theory]`
 - **WebApplicationFactory** -- Integration tests against the real HTTP pipeline
-- **Testcontainers** -- Real databases (PostgreSQL, SQL Server) in tests
+- **SQLite in-memory** -- A relational database in tests, no external server
 - **Verify** -- Snapshot testing for complex response structures
 - **FakeTimeProvider** -- Deterministic time in tests
 
@@ -127,8 +127,8 @@ Each cycle adds one behavior. Never combine multiple behaviors in a single cycle
 If the project lacks test infrastructure, set it up before the first cycle:
 
 1. Create test project with xUnit v3 and required packages
-2. Configure `WebApplicationFactory` with Testcontainers for the real database
-3. Add a shared fixture to avoid spinning up containers per test class
+2. Configure `WebApplicationFactory` to swap the app's database for SQLite in-memory (`DataSource=:memory:`, connection kept open)
+3. Add a shared fixture that opens the connection and runs `EnsureCreatedAsync()` once per test class
 4. Verify the infrastructure with a simple health-check test
 
 ## Example

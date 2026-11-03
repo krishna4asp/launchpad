@@ -91,4 +91,3 @@ OpenAPI will document: [what the generated spec includes]
 - Database queries within handlers → **ef-core-specialist**
 - Test writing for endpoints → **test-engineer**
 - Authentication provider setup → **security-auditor**
-- API deployment and hosting → **devops-engineer**

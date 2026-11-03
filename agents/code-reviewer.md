@@ -31,7 +31,6 @@ Load additional skills based on the files being reviewed:
 - Database / entities → `ef-core`
 - Tests → `testing`
 - Authentication / authorization → `authentication`
-- Docker / CI files → `docker`, `ci-cd`
 - Configuration / DI → `configuration`, `dependency-injection`
 - Caching code → `caching`
 - Messaging code → `messaging`
@@ -110,5 +109,4 @@ get_type_hierarchy(typeName) → verify inheritance changes are correct
 - Complex query optimization → **ef-core-specialist**
 - Comprehensive security audit → **security-auditor**
 - Performance profiling → **performance-analyst**
-- CI/CD pipeline review → **devops-engineer**
 - Writing the actual tests → **test-engineer**

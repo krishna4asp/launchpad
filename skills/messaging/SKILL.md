@@ -352,7 +352,7 @@ await bus.PublishAsync(new OrderCreated(...));
 | Reliable event publishing | Transactional outbox (both Wolverine and MassTransit support this) |
 | Simple 2-3 step workflow | Event choreography |
 | Complex workflow with compensation | Wolverine saga or MassTransit saga |
-| Local development broker | RabbitMQ (via Docker or Aspire) |
+| Local development broker | RabbitMQ (local install) |
 | Production cloud broker | Amazon SQS (queues) + SNS (fan-out), or RabbitMQ (Amazon MQ) |
 | HTTP request needs the result | Controller calls `IMessageBus.InvokeAsync<T>` |
 | HTTP request starts background work | Controller calls `IMessageBus.SendAsync`, returns `202 Accepted` |

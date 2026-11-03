@@ -189,7 +189,7 @@ builder.Services.AddSerilog((services, lc) => lc.ReadFrom.Configuration(builder.
 | Distributed tracing / metrics | Load `opentelemetry` — OTLP exporter                                |
 | Custom business metrics       | `IMeterFactory` + counters/histograms (`opentelemetry` skill)       |
 | Request tracing               | Correlation ID middleware (this skill)                              |
-| Container health              | `/health/live` and `/health/ready` endpoints (this skill)           |
+| Liveness / readiness probes   | `/health/live` and `/health/ready` endpoints (this skill)           |
 | Health checks in a controller app | `MapHealthChecks(...).AllowAnonymous()` next to `MapControllers()` — no `HealthController` |
 | Logging inside controllers    | `ILogger<TController>` + `[LoggerMessage]`, business events only     |
 | Log storage                   | Seq (development), Elastic/Grafana/OTLP backend (production)        |

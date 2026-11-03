@@ -14,7 +14,7 @@ This is a .NET 10 REST API. Choose an architecture that fits your domain complex
 - **Mediator** (source-generated, MIT) or Wolverine or raw handlers — command/query dispatch
 - **FluentValidation** — request validation
 - **Serilog** — structured logging
-- **xUnit v3** + **Testcontainers** — testing
+- **xUnit v3** + **SQLite in-memory** — testing
 
 ## Architecture
 
@@ -65,7 +65,7 @@ tests/
       [Feature]/
         [Operation]Tests.cs
     Fixtures/
-      ApiFixture.cs             # WebApplicationFactory + Testcontainers
+      ApiFixture.cs             # WebApplicationFactory + SQLite in-memory
 ```
 
 ## Coding Standards
@@ -88,7 +88,7 @@ Load these dotnet-claude-kit skills for context:
 - `ddd` — Aggregates, value objects, domain events (if using DDD)
 - `controller-based-apis` — `[ApiController]` controllers, attribute routing, `ActionResult<T>`, OpenAPI metadata
 - `ef-core` — DbContext patterns, query optimization, migrations
-- `testing` — xUnit v3, WebApplicationFactory, Testcontainers
+- `testing` — xUnit v3, WebApplicationFactory, SQLite in-memory
 - `error-handling` — Result pattern, ProblemDetails
 - `authentication` — JWT/OIDC if auth is needed
 - `logging` — Serilog, OpenTelemetry
@@ -154,6 +154,6 @@ Do NOT generate code that:
 - Returns untyped `IActionResult` without `[ProducesResponseType]` — use `ActionResult<T>` for OpenAPI
 - Returns domain entities from endpoints — always map to response DTOs
 - Creates repository abstractions over EF Core — use DbContext directly
-- Uses in-memory database for tests — use Testcontainers
+- Uses the EF Core InMemory provider for tests — use SQLite in-memory
 - Catches bare `Exception` — catch specific types, let the global handler catch the rest
 - Uses string interpolation in log messages — use structured logging templates

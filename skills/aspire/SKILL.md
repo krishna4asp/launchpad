@@ -14,7 +14,7 @@ description: >
 
 ## Core Principles
 
-1. **AppHost orchestrates; it is never deployed itself** — Aspire's core job is the local development experience: starting services, databases, and message brokers together. Modern Aspire also generates deployment assets (`aspire publish` for docker-compose/Kubernetes manifests you run on Amazon ECS or EKS; the `Aspire.Hosting.AWS` integration provisions AWS resources via CloudFormation/CDK) — but the AppHost process itself stays a dev/build-time tool, not a production runtime.
+1. **AppHost orchestrates; it is never deployed itself** — Aspire's core job is the local development experience: starting services, databases, and message brokers together. The AppHost process is a dev-time tool, not a production runtime.
 2. **Service defaults are your baseline** — The `ServiceDefaults` project configures OpenTelemetry, health checks, and resilience for all services in one place.
 3. **Use Aspire integrations** — Aspire has built-in integrations for PostgreSQL, Redis, RabbitMQ, SQL Server, and more. They handle connection strings, health checks, and tracing automatically.
 4. **The dashboard is your observability tool** — Use the Aspire dashboard for local development tracing, logging, and metrics instead of setting up Seq/Grafana locally.
@@ -134,9 +134,7 @@ MyApp.slnx
 // BAD — running the AppHost executable in production as an orchestrator
 // The AppHost is a dev/build-time tool, not a production runtime
 
-// GOOD — deploy the generated assets, not the AppHost:
-//   aspire publish      → docker-compose / Kubernetes manifests from the app model (run on ECS / EKS)
-//   Aspire.Hosting.AWS  → provision AWS resources (CloudFormation / CDK) from the app model
+// GOOD — deploy the service projects themselves; the AppHost stays on developer machines
 ```
 
 ### Don't Hardcode Connection Strings with Aspire
@@ -170,5 +168,5 @@ builder.AddServiceDefaults();
 | Shared service configuration     | ServiceDefaults project                                                                     |
 | Database for local dev           | Aspire `AddPostgres()` / `AddSqlServer()`                                                   |
 | Service discovery                | Aspire's built-in service discovery                                                         |
-| Production deployment            | `aspire publish` (compose/K8s manifests) or `aspire deploy` (ACA); never the AppHost itself |
+| Production deployment            | Deploy the service projects; never the AppHost itself                                       |
 | Observability in local dev       | Aspire dashboard (auto-configured)                                                          |

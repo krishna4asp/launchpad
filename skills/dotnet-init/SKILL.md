@@ -71,7 +71,7 @@ Ask about specific technology choices:
 - **Auth**: JWT, OIDC, Cookie, or none yet
 - **Caching**: HybridCache, Redis, or none yet
 - **Messaging**: Wolverine, MassTransit, or none yet
-- **Testing**: Confirm xUnit + Testcontainers defaults
+- **Testing**: Confirm xUnit + SQLite in-memory defaults
 
 ### Step 4: Generate CLAUDE.md
 

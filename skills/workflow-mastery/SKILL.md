@@ -173,10 +173,10 @@ I want to verify the migration before applying it."
 
 ### Subagent Patterns for .NET
 
-The kit ships 10 specialist agents — route to them before writing your own:
+The kit ships 9 specialist agents — route to them before writing your own:
 `dotnet-architect`, `code-reviewer`, `refactor-cleaner`, `test-engineer`,
 `security-auditor`, `build-error-resolver`, `ef-core-specialist`,
-`api-designer`, `performance-analyst`, `devops-engineer`. Each carries
+`api-designer`, `performance-analyst`. Each carries
 pre-loaded skills and domain context a generalist session lacks.
 
 **Use them:**
@@ -302,7 +302,7 @@ You: "Would a staff .NET engineer approve this?
 ```
 // BAD — "the context window is huge, let's load everything"
 Read all 30 files in the Orders module, all 15 test files,
-docker-compose.yml, every migration
+appsettings.*.json, every migration
 *80k tokens consumed before writing a single line of code*
 
 // GOOD — minimum viable context

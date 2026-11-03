@@ -92,7 +92,7 @@ Every scaffolded feature MUST include ALL nine items. Do not skip any:
 - [ ] **Validator** — FluentValidation rules with meaning (ranges, required, max lengths), run by the global `FluentValidationFilter` (`AddControllers(o => o.Filters.Add<FluentValidationFilter>())`, error-handling skill)
 - [ ] **DTOs** — records shaped for the consumer, never 1:1 entity mirrors
 - [ ] **EF configuration** — `IEntityTypeConfiguration<T>`; no data annotations on entities
-- [ ] **Integration tests** — `WebApplicationFactory` + Testcontainers, DI replacement via `services.RemoveAll<DbContextOptions<T>>()`
+- [ ] **Integration tests** — `WebApplicationFactory` + SQLite in-memory, DI replacement via `services.RemoveAll<DbContextOptions<T>>()` and `RemoveAll<IDbContextOptionsConfiguration<T>>()`
 - [ ] **OpenAPI metadata** — `[HttpPost(Name = ...)]`, `[EndpointSummary]`, `[ProducesResponseType<T>]`, `ValidationProblemDetails` for 400, `ProblemDetails` for 404
 - [ ] **CancellationToken** — on every async method and passed to every async call
 - [ ] **Result pattern** — handlers return `Result<T>`; controller actions map success → `Ok`/`CreatedAtRoute`, failure → `ToProblemDetails(result)`

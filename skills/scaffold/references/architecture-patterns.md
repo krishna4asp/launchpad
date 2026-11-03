@@ -143,7 +143,7 @@ After creating entity + config: `dotnet ef migrations add AddProduct`
 
 ### Integration Test
 
-Fixture with real database via Testcontainers and proper DI replacement
+Fixture with a SQLite in-memory database and proper DI replacement
 (`RemoveAll`, not fragile name matching), plus one happy-path and one
 validation-failure test per scaffolded operation:
 
@@ -151,19 +151,27 @@ validation-failure test per scaffolded operation:
 // Tests/Fixtures/ApiFixture.cs
 public sealed class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder().WithImage("postgres:17").Build();
+    // The in-memory database lives only while this connection stays open
+    private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<AppDbContext>>();
-            services.AddDbContext<AppDbContext>(o => o.UseNpgsql(_postgres.GetConnectionString()));
+            services.RemoveAll<IDbContextOptionsConfiguration<AppDbContext>>();
+            services.AddDbContext<AppDbContext>(o => o.UseSqlite(_connection));
         });
     }
 
-    public async Task InitializeAsync() { await _postgres.StartAsync(); /* apply migrations */ }
-    public new async Task DisposeAsync() { await _postgres.DisposeAsync(); await base.DisposeAsync(); }
+    public async ValueTask InitializeAsync()
+    {
+        await _connection.OpenAsync();
+        using var scope = Services.CreateScope();
+        await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreatedAsync();
+    }
+
+    public override async ValueTask DisposeAsync() { await _connection.DisposeAsync(); await base.DisposeAsync(); }
 }
 
 // Tests/Features/Orders/CreateOrderTests.cs

@@ -2,11 +2,11 @@
 name: testing
 description: >
   Testing strategy for .NET 10 applications. Covers xUnit v3, WebApplicationFactory
-  for integration tests, Testcontainers for real database testing, Verify for
+  for integration tests, SQLite in-memory for database testing, Verify for
   snapshot testing, and the AAA pattern.
   Load this skill when writing tests, setting up test infrastructure, reviewing
   test coverage, or when the user mentions "test", "xUnit", "WebApplicationFactory",
-  "Testcontainers", "integration test", "unit test", "bUnit", "snapshot test",
+  "SQLite in-memory", "integration test", "unit test", "bUnit", "snapshot test",
   "Verify", "test coverage", "AAA pattern", "WireMock", or "FakeTimeProvider".
 ---
 
@@ -15,7 +15,7 @@ description: >
 ## Core Principles
 
 1. **Integration tests are the highest-value tests** — A single `WebApplicationFactory` test covers routing, binding, validation, business logic, and persistence in one shot. Start here before writing unit tests.
-2. **Real databases in tests** — Use Testcontainers to spin up real PostgreSQL/SQL Server instances. In-memory providers hide real bugs (transactions, constraints, SQL generation).
+2. **A relational database in tests** — Use SQLite in-memory (`Microsoft.EntityFrameworkCore.Sqlite` with `DataSource=:memory:`). It enforces constraints, transactions and foreign keys, and needs no external server. Never use the EF Core InMemory provider — it is not relational and hides real bugs.
 3. **AAA pattern is mandatory** — Every test has three clearly separated sections: Arrange, Act, Assert. No mixing.
 4. **Test behavior, not implementation** — Tests should survive refactoring. Test what the system does, not how it does it.
 
@@ -69,37 +69,38 @@ The highest-value test pattern. Tests the full HTTP pipeline.
 // Fixtures/ApiFixture.cs
 public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-        .WithImage("postgres:18")
-        .Build();
+    // The in-memory database lives only while this connection stays open
+    private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {
-            // Replace the real DB with Testcontainers
+            // Remove the app's provider registration (EF Core 9+ also registers
+            // IDbContextOptionsConfiguration<T>, so remove both)
             services.RemoveAll<DbContextOptions<AppDbContext>>();
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(_postgres.GetConnectionString()));
+            services.RemoveAll<IDbContextOptionsConfiguration<AppDbContext>>();
+            services.AddDbContext<AppDbContext>(options => options.UseSqlite(_connection));
         });
     }
 
     // xUnit v3: IAsyncLifetime.InitializeAsync returns ValueTask (v2 used Task)
     public async ValueTask InitializeAsync()
     {
-        await _postgres.StartAsync();
+        await _connection.OpenAsync();
 
-        // Apply migrations
+        // Migrations are generated for the production provider, so build the
+        // schema from the model instead
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await db.Database.MigrateAsync();
+        await db.Database.EnsureCreatedAsync();
     }
 
     // xUnit v3: IAsyncLifetime inherits IAsyncDisposable — override the
     // ValueTask DisposeAsync that WebApplicationFactory already provides
     public override async ValueTask DisposeAsync()
     {
-        await _postgres.DisposeAsync();
+        await _connection.DisposeAsync();
         await base.DisposeAsync();
     }
 }
@@ -144,24 +145,43 @@ public class CreateOrderTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 }
 ```
 
-### Testcontainers for Real Database Testing
+### SQLite In-Memory for Database Testing
+
+Package: `Microsoft.EntityFrameworkCore.Sqlite`. Each open connection to `DataSource=:memory:` is its own empty database, and it disappears when the connection closes.
 
 ```csharp
-// For SQL Server
-private readonly MsSqlContainer _mssql = new MsSqlBuilder()
-    .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-    .Build();
+// Unit / handler tests — a fresh database per test
+public sealed class SqliteDb : IAsyncDisposable
+{
+    private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
-// For PostgreSQL
-private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-    .WithImage("postgres:18")
-    .Build();
+    public AppDbContext Context { get; private set; } = null!;
 
-// For Redis
-private readonly RedisContainer _redis = new RedisBuilder()
-    .WithImage("redis:7")
-    .Build();
+    public static async Task<SqliteDb> CreateAsync()
+    {
+        var db = new SqliteDb();
+        await db._connection.OpenAsync();
+        db.Context = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(db._connection)
+            .Options);
+        await db.Context.Database.EnsureCreatedAsync();
+        return db;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Context.DisposeAsync();
+        await _connection.DisposeAsync();
+    }
+}
 ```
+
+SQLite is not your production database. Know the gaps:
+
+- No schemas, sequences, or provider-specific column types (`jsonb`, `rowversion`). Keep those mappings out of tests or configure them conditionally.
+- `DateTimeOffset` and `decimal` can't be ordered or compared in SQL. Add a value converter in tests, or keep those queries client-side.
+- Raw SQL written for PostgreSQL/SQL Server won't run.
+- Use `EnsureCreatedAsync()`, not `MigrateAsync()`: migrations target the production provider.
 
 ### Verify Snapshot Testing
 
@@ -264,16 +284,16 @@ Use the pattern: `MethodName_StateUnderTest_ExpectedBehavior`
 
 ## Anti-patterns
 
-### Don't Use In-Memory Database for Integration Tests
+### Don't Use the EF Core InMemory Provider
 
 ```csharp
-// BAD — hides real SQL behavior, transactions, constraints
+// BAD — EF Core InMemory provider: not relational, no constraints or transactions
 services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("TestDb"));
 
-// GOOD — Testcontainers with real database
+// GOOD — SQLite in-memory: relational, enforces constraints and foreign keys
 services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(testContainer.GetConnectionString()));
+    options.UseSqlite(openConnection)); // "DataSource=:memory:", kept open
 ```
 
 ### Don't Test Implementation Details
@@ -328,7 +348,7 @@ public async Task CreateOrder_PersistsOrderToDatabase()
 | ----------------------------------- | ------------------------------------------------ |
 | Testing an API endpoint             | `WebApplicationFactory` integration test         |
 | Testing business logic in isolation | Unit test with fakes/stubs                       |
-| Database-dependent tests            | Testcontainers (real DB)                         |
+| Database-dependent tests            | SQLite in-memory (`DataSource=:memory:`)         |
 | Complex response validation         | Verify snapshot testing                          |
 | Time-dependent logic                | `FakeTimeProvider`                               |
 | External API dependency             | `WireMock.Net` or `HttpMessageHandler` stub      |
