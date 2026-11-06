@@ -32,7 +32,7 @@ Analyze the current directory to determine if this is an existing or greenfield 
 → Look for .slnx / .sln files
 → If found, scan .csproj files for SDK type:
   - Microsoft.NET.Sdk.Web → web-api or blazor-app
-  - Microsoft.NET.Sdk.Worker → worker-service
+  - Microsoft.NET.Sdk.Worker → no template; tell the user and ask which template (if any) to start from
   - Microsoft.NET.Sdk → class-library
   - Multiple projects with inter-module references → modular-monolith
   - If ambiguous, ask the user
@@ -41,7 +41,6 @@ Analyze the current directory to determine if this is an existing or greenfield 
   - Ask: "What are you building?"
     - REST API / microservice → web-api
     - Blazor application → blazor-app
-    - Background worker / queue processor → worker-service
     - NuGet package / shared library → class-library
     - Multi-module system → modular-monolith
   - Ask: "Project name?"
