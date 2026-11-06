@@ -4,7 +4,7 @@
 
 Use this template when you are building:
 
-- A reusable class library distributed as a NuGet package
+- A reusable class library shared across projects or solutions
 - A shared utilities or abstractions library consumed by other projects in a solution
 - An SDK or client library for an API or service
 - A domain-specific library (parsing, validation, calculations, etc.)
@@ -13,10 +13,9 @@ Use this template when you are building:
 
 1. Copy `CLAUDE.md` into the root of your .NET class library project
 2. Replace `[ProjectName]` with your actual project name
-3. Replace `[Author]`, `[Description]`, `[org]`, `[repo]`, and tag placeholders in the NuGet package configuration section
-4. Update the **Tech Stack** section to match your actual dependencies
-5. Remove any optional items (BenchmarkDotNet, Verify, DI abstractions) that do not apply
-6. Remove any skills references that are not relevant to your project
+3. Update the **Tech Stack** section to match your actual dependencies
+4. Remove any optional items (BenchmarkDotNet, Verify, DI abstractions) that do not apply
+5. Remove any skills references that are not relevant to your project
 
 ## What's Included
 
@@ -27,7 +26,6 @@ This template configures Claude Code to:
 - Use .NET 10 / C# 14 modern patterns (primary constructors, collection expressions, records)
 - Return immutable collections from public APIs
 - Follow semantic versioning discipline for public API changes
-- Pack and publish NuGet packages with SourceLink and symbol packages
 - Write tests with xUnit v3
 - Minimize third-party dependencies to reduce consumer burden
 - Use global usings if the namespace used in more than one file

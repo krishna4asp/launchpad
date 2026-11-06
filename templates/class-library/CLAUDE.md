@@ -1,10 +1,10 @@
-# [Project Name] -- Class Library / NuGet Package
+# [Project Name] -- Class Library
 
 > Copy this file into your project root and customize the sections below.
 
 ## Project Context
 
-This is a reusable .NET 10 class library distributed as a NuGet package. The library exposes a well-defined public API surface while keeping implementation details internal. It is designed to be consumed by other .NET projects with minimal dependencies and maximum compatibility.
+This is a reusable .NET 10 class library consumed by other .NET projects. The library exposes a well-defined public API surface while keeping implementation details internal. It is designed to be consumed by other .NET projects with minimal dependencies and maximum compatibility.
 
 ## Tech Stack
 
@@ -120,7 +120,7 @@ Load these dotnet-claude-kit skills for context:
 
 - `modern-csharp` -- C# 14 language features and idioms
 - `architecture-advisor` -- Architecture guidance for structuring the library
-- `project-structure` -- Solution layout, Directory.Build.props, central package management
+- `project-structure` -- Solution layout and project references
 - `testing` -- xUnit v3, test patterns, snapshot testing
 - `workflow-mastery` -- Parallel worktrees, verification loops, subagent patterns, context discipline
 - `instinct-system` -- Capture corrections, instincts, and discoveries as persistent learning
@@ -142,65 +142,20 @@ Use `cwm-roslyn-navigator` tools to minimize token consumption:
 ## Commands
 
 ```bash
-# Build
-dotnet build
-
 # Run tests
 dotnet test
 
 # Run tests with coverage
 dotnet test --collect:"XPlat Code Coverage"
 
-# Pack (create NuGet package)
-dotnet pack src/[ProjectName] -c Release -o ./nupkg
-
-# Push to NuGet.org
-dotnet nuget push ./nupkg/*.nupkg --api-key <API_KEY> --source https://api.nuget.org/v3/index.json
-
 # Format check
 dotnet format --verify-no-changes
-
-# Validate the package contents
-dotnet pack src/[ProjectName] -c Release -o ./nupkg && dotnet nuget verify ./nupkg/*.nupkg
-```
-
-## NuGet Package Configuration
-
-Ensure the `.csproj` includes proper package metadata:
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <!-- Package metadata -->
-    <PackageId>[ProjectName]</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>[Author]</Authors>
-    <Description>[Description of the library]</Description>
-    <PackageTags>[tag1];[tag2]</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/[org]/[repo]</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/[org]/[repo]</RepositoryUrl>
-
-    <!-- Documentation and source linking -->
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-
-    <!-- Deterministic builds for reproducibility -->
-    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-  </ItemGroup>
-</Project>
 ```
 
 ## Workflow
 
 - **Plan first** -- Enter plan mode for any non-trivial task (3+ steps or architecture decisions). Iterate until the plan is solid before writing code.
-- **Verify before done** -- Run `dotnet build` and `dotnet test` after changes. Use `get_diagnostics` via MCP to catch warnings. Ask: "Would a staff engineer approve this?"
+- **Verify before done** -- Run `dotnet test` after changes. Use `get_diagnostics` via MCP to catch warnings. Ask: "Would a staff engineer approve this?"
 - **Fix bugs autonomously** -- When given a bug report, investigate and fix it without hand-holding. Check logs, errors, failing tests -- then resolve them.
 - **Stop and re-plan** -- If implementation goes sideways, STOP and re-plan. Don't push through a broken approach.
 - **Use subagents** -- Offload research, exploration, and parallel analysis to subagents. One task per subagent for focused execution.
