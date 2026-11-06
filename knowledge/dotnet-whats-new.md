@@ -95,7 +95,7 @@ Source generators can now use partial properties.
 | ------------------------ | ------- | ------------------------------------------------------------------------------ |
 | Mediator (martinothamar) | 3.x     | Kit default mediator — source-generated, MIT, Native AOT compatible            |
 | MediatR                  | 14.x    | ⚠️ Commercial/RPL-1.5 dual license (Lucky Penny) since v13; ≤12.x stays MIT    |
-| FluentValidation         | 12.x    | .NET 10 support                                                               |
+| FluentValidation         | 12.x    | .NET 10 support                                                                |
 | Serilog.AspNetCore       | 10.x    | Aligned with .NET 10 (Serilog core stays 4.x)                                  |
 | Wolverine                | 6.x     | Kit default messaging — MIT; v6 changed defaults/removed APIs                  |
 | MassTransit              | 9.x     | ⚠️ Commercial license from v9; v8 Apache 2.0, patched only through end of 2026 |
