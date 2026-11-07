@@ -81,12 +81,6 @@ The version ranges below (e.g., "13.x") indicate the **minimum recommended major
 - **Rationale:** The gold standard for structured logging in .NET. Rich sink ecosystem (Seq, Elasticsearch, Application Insights, file, console). Enrichers for correlation IDs, machine name, and more. `LogContext` for scoped properties.
 - **When NOT to use:** If the built-in `Microsoft.Extensions.Logging` with a simple console/debug provider meets your needs (e.g., small CLI tools). If your organization mandates a specific logging framework.
 
-### OpenTelemetry
-
-- **Package:** `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Instrumentation.Http`, `OpenTelemetry.Exporter.Otlp`
-- **Rationale:** Vendor-neutral standard for distributed traces, metrics, and logs. First-class .NET support. Exports to Jaeger, Zipkin, Prometheus, Grafana, Azure Monitor, AWS X-Ray, and more. Essential for microservices and modular monoliths.
-- **When NOT to use:** For a single small API where Serilog structured logs are sufficient. If your entire stack is Azure and you prefer Application Insights SDK directly (though OTel can export to App Insights too).
-
 ---
 
 ## Testing

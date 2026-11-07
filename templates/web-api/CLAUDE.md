@@ -91,7 +91,7 @@ Load these dotnet-claude-kit skills for context:
 - `testing` — xUnit v3, WebApplicationFactory, SQLite in-memory
 - `error-handling` — Result pattern, ProblemDetails
 - `authentication` — JWT/OIDC if auth is needed
-- `logging` — Serilog, OpenTelemetry
+- `logging` — Serilog, health checks, correlation IDs
 - `configuration` — Options pattern, secrets management
 - `dependency-injection` — Service registration patterns
 - `workflow-mastery` — Parallel worktrees, verification loops, subagent patterns, context discipline

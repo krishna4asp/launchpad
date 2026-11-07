@@ -18,7 +18,7 @@ description: >
 2. **Configure via `AddResilienceHandler`, not manual wrapping** — For HTTP calls, use `Microsoft.Extensions.Http.Resilience` which adds pipelines directly to `HttpClient` via DI. No manual `ExecuteAsync` wrapping.
 3. **Compose strategies, don't nest them** — A single `ResiliencePipeline` can chain retry + circuit breaker + timeout. Strategies execute outer-to-inner (first added = outermost). No need for nested try/catch or manual orchestration.
 4. **Always set timeouts** — Every external call needs a timeout. Use Polly's `AddTimeout()` as the innermost strategy so it applies per-attempt, and optionally an outer timeout for total elapsed time.
-5. **Instrument everything** — Polly v8 emits `Metering` events and supports `TelemetryOptions` for OpenTelemetry. Use them to monitor retry rates, circuit breaker state, and timeout frequency.
+5. **Instrument everything** — Polly v8 supports `TelemetryOptions` for structured logging of strategy events. Use it to see retries, circuit breaker state changes, and timeouts in your logs.
 
 ## Patterns
 
@@ -173,8 +173,8 @@ builder.Services.AddHttpClient<ISearchService, SearchServiceClient>()
 ```csharp
 builder.Services.AddResiliencePipeline("monitored", (builder, context) =>
 {
-    // Polly v8 emits metrics via System.Diagnostics.Metrics automatically.
-    // ConfigureTelemetry wires structured logging for strategy events.
+    // ConfigureTelemetry wires structured logging for strategy events
+    // (retry attempts, circuit breaker opened/closed, timeouts).
     builder
         .ConfigureTelemetry(new TelemetryOptions
         {
@@ -184,10 +184,6 @@ builder.Services.AddResiliencePipeline("monitored", (builder, context) =>
         .AddCircuitBreaker(new CircuitBreakerStrategyOptions())
         .AddTimeout(TimeSpan.FromSeconds(10));
 });
-
-// In Program.cs — wire up OpenTelemetry to capture Polly metrics
-builder.Services.AddOpenTelemetry()
-    .WithMetrics(metrics => metrics.AddMeter("Polly"));
 ```
 
 ### Rate Limiting (.NET Built-in)
@@ -323,11 +319,22 @@ builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions());
 ### GOOD: Circuit Breaker with Telemetry
 
 ```csharp
-// GOOD — Polly v8 metrics captured via OpenTelemetry
-builder.Services.AddOpenTelemetry()
-    .WithMetrics(metrics => metrics.AddMeter("Polly"));
+// GOOD — state changes are logged and visible
+builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions
+{
+    OnOpened = args =>
+    {
+        logger.LogWarning("Circuit opened for {Duration}", args.BreakDuration);
+        return ValueTask.CompletedTask;
+    },
+    OnClosed = _ =>
+    {
+        logger.LogInformation("Circuit closed");
+        return ValueTask.CompletedTask;
+    }
+});
 
-// Dashboard alerts on: polly.circuit_breaker.state = Open
+// Alert on the "Circuit opened" log event in your log backend
 ```
 
 ## Decision Guide

@@ -125,7 +125,7 @@ public sealed class GetOrderReportHandler(IDbConnection connection)
 - **Type-safe queries.** Compile-time checking of LINQ queries catches errors before runtime. Refactoring entity properties automatically updates queries.
 - **Migration management.** EF Core migrations provide a structured, version-controlled approach to schema evolution that raw SQL scripts cannot match for productivity.
 - **AI-assisted development.** Claude Code generates highly accurate EF Core LINQ queries because the patterns are well-documented and type-safe. Raw SQL generation is more error-prone.
-- **Ecosystem integration.** EF Core integrates with Aspire, health checks, OpenTelemetry, and the ASP.NET Core DI container out of the box.
+- **Ecosystem integration.** EF Core integrates with health checks, logging, and the ASP.NET Core DI container out of the box.
 
 ### Negative
 

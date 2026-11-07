@@ -188,7 +188,7 @@ Load these dotnet-claude-kit skills for context:
 - `error-handling` — Result pattern, ProblemDetails
 - `testing` — xUnit v3, WebApplicationFactory, SQLite in-memory
 - `configuration` — Options pattern, per-module configuration sections
-- `logging` — Serilog, structured logging, OpenTelemetry
+- `logging` — Serilog, structured logging, health checks
 - `workflow-mastery` — Parallel worktrees, verification loops, subagent patterns, context discipline
 - `instinct-system` — Capture corrections, instincts, and discoveries as persistent learning
 - `wrap-up` — Structured session handoff to `.claude/handoff.md`

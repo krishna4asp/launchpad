@@ -180,23 +180,6 @@ using (LogContext.PushProperty("TenantId", tenantId))
 
 Requires `.Enrich.FromLogContext()` on the logger configuration.
 
-### OpenTelemetry Sink (OTLP Export)
-
-Export Serilog events directly to any OTLP backend without the OpenTelemetry SDK:
-
-```csharp
-.WriteTo.OpenTelemetry(options =>
-{
-    options.Endpoint = "http://localhost:4317";
-    options.Protocol = OtlpProtocol.Grpc;
-    options.ResourceAttributes = new Dictionary<string, object>
-    {
-        ["service.name"] = "MyApp.Api",
-        ["deployment.environment"] = "production"
-    };
-})
-```
-
 ### Serilog.Expressions for Filtering
 
 Requires the `Serilog.Expressions` package.
@@ -241,7 +224,7 @@ logger.LogInformation("Order {OrderId} created for {CustomerId}", orderId, custo
 ### Don't Skip CloseAndFlush
 
 ```csharp
-// BAD — async sinks (Seq, OTLP, Elasticsearch) lose buffered events
+// BAD — async sinks (Seq, Elasticsearch) lose buffered events
 app.Run();
 
 // GOOD — wrap in try/finally
@@ -295,11 +278,10 @@ logger.LogInformation("Request: {@Request}", httpContext.Request);
 | ------------------------- | --------------------------------------------------------- |
 | Application logging       | Serilog with `AddSerilog()` and appsettings.json          |
 | Log storage (development) | Seq (free single-user) or console                         |
-| Log storage (production)  | Seq, Elasticsearch (Elastic sink), or OTLP backend        |
+| Log storage (production)  | Seq or Elasticsearch (Elastic sink)                       |
 | Request logging           | `UseSerilogRequestLogging()` (replaces per-request noise) |
 | Scoped properties         | `LogContext.PushProperty()` in middleware                 |
 | Log filtering             | `Serilog.Expressions` for expression-based filtering      |
 | High-performance paths    | `[LoggerMessage]` source generator                        |
 | Audit trails              | `AuditTo` (synchronous, exceptions propagate)             |
 | Log levels by environment | `MinimumLevel.Override` per namespace in appsettings      |
-| OpenTelemetry integration | `Serilog.Sinks.OpenTelemetry` (no SDK dependency)         |

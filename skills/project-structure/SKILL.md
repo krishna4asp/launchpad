@@ -82,7 +82,6 @@ MyApp/
 
     <!-- Observability -->
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
 
     <!-- Testing -->
     <PackageVersion Include="xunit.v3" Version="3.2.2" />

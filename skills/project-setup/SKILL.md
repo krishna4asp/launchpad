@@ -36,12 +36,12 @@ This skill owns one thing: the kit's recommended tech-stack defaults and why. Th
 | Auth          | JWT Bearer, OIDC (Keycloak/Auth0), None | JWT Bearer                | Simplest secure default for APIs; move to OIDC when an external IdP exists                |
 | Caching       | HybridCache, Redis, None                | HybridCache               | Built-in, stampede protection, L1+L2 — add Redis only as its L2 backend                   |
 | Messaging     | Wolverine (RabbitMQ), MassTransit, None | None (add later)          | Premature messaging adds ops burden; Wolverine (MIT) when needed                          |
-| Observability | Serilog + OpenTelemetry, Basic logging  | Serilog + OTEL            | Structured logs + traces from day one are cheap; retrofitting is not                      |
+| Observability | Serilog, Basic logging                  | Serilog                   | Structured logs from day one are cheap; retrofitting is not                               |
 | Resilience    | Polly v8 pipelines, Basic retry         | Polly v8                  | `AddStandardResilienceHandler()` is one line for production-grade defaults                |
 | API docs      | Built-in OpenAPI + Scalar               | OpenAPI + Scalar          | Framework-maintained spec generation; Scalar replaces Swagger UI                          |
 | Testing       | xUnit v3 + SQLite in-memory             | xUnit v3 + SQLite         | Relational tests with no external server; the EF InMemory provider hides real bugs        |
 
-Once dimensions are chosen, `dotnet-init` bakes them into the generated CLAUDE.md, and each choice maps to a skill to load when working in that area (`ef-core`, `authentication`, `caching`, `messaging`, `serilog`, `opentelemetry`, `resilience`, `openapi`, `scalar`, `testing`).
+Once dimensions are chosen, `dotnet-init` bakes them into the generated CLAUDE.md, and each choice maps to a skill to load when working in that area (`ef-core`, `authentication`, `caching`, `messaging`, `serilog`, `resilience`, `openapi`, `scalar`, `testing`).
 
 ## Anti-patterns
 

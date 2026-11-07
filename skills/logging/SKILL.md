@@ -4,8 +4,7 @@ description: >
   Observability overview and glue for .NET 10: how the pieces fit together,
   plus the cross-cutting parts owned here — ASP.NET health check endpoints
   (/health), correlation IDs, and log-level strategy. For deep Serilog setup
-  load `serilog`; for traces and metrics load `opentelemetry`. Load this
-  skill when setting up observability from scratch, wiring health check
+  load `serilog`. Load this skill when setting up observability from scratch, wiring health check
   endpoints or correlation IDs, or when the user says "logging",
   "observability", "monitoring setup", "liveness", "readiness", or "ILogger".
 ---
@@ -15,23 +14,21 @@ description: >
 ## Core Principles
 
 1. **Structured logging with Serilog** — Every log entry is a structured event with named properties, not a formatted string. This enables searching, filtering, and alerting. All setup (two-stage bootstrap, `AddSerilog()`, sinks, enrichers) lives in the **serilog** skill — that skill's `AddSerilog()`-over-`UseSerilog()` guidance is canonical.
-2. **OpenTelemetry for distributed tracing** — Traces connect requests across services; metrics track system health over time. Full setup lives in the **opentelemetry** skill.
-3. **Health checks for operational readiness** — Every service exposes `/health` endpoints for load balancers and orchestrators. Liveness and readiness are separate questions and separate endpoints.
-4. **Correlation IDs for request tracing** — Every request gets a unique ID that flows through all log entries and downstream service calls, so one user complaint maps to one filtered log stream.
-5. **REST API controllers** — Application endpoints are attribute-routed controllers (`[ApiController]`, `ControllerBase`) — see the `controller-based-apis` skill. Health checks stay on `MapHealthChecks` (health-check middleware), mapped alongside `MapControllers()`.
+2. **Health checks for operational readiness** — Every service exposes `/health` endpoints for load balancers and orchestrators. Liveness and readiness are separate questions and separate endpoints.
+3. **Correlation IDs for request tracing** — Every request gets a unique ID that flows through all log entries and downstream service calls, so one user complaint maps to one filtered log stream.
+4. **REST API controllers** — Application endpoints are attribute-routed controllers (`[ApiController]`, `ControllerBase`) — see the `controller-based-apis` skill. Health checks stay on `MapHealthChecks` (health-check middleware), mapped alongside `MapControllers()`.
 
 ## Patterns
 
 ### How the Pieces Fit Together
 
-| Concern                                               | Owner                        | Skill           |
-| ----------------------------------------------------- | ---------------------------- | --------------- |
-| Structured application logs                           | Serilog (`AddSerilog()`)     | `serilog`       |
-| Request summary logging                               | `UseSerilogRequestLogging()` | `serilog`       |
-| Traces + metrics + OTLP export                        | OpenTelemetry SDK            | `opentelemetry` |
-| Health endpoints, correlation IDs, log-level strategy | This skill                   | `logging`       |
+| Concern                                               | Owner                        | Skill     |
+| ----------------------------------------------------- | ---------------------------- | --------- |
+| Structured application logs                           | Serilog (`AddSerilog()`)     | `serilog` |
+| Request summary logging                               | `UseSerilogRequestLogging()` | `serilog` |
+| Health endpoints, correlation IDs, log-level strategy | This skill                   | `logging` |
 
-Wire logging first (you need logs to debug the rest), then health checks, then tracing.
+Wire logging first (you need logs to debug the rest), then correlation IDs, then health checks.
 
 ### Correlation IDs
 
@@ -186,11 +183,9 @@ builder.Services.AddSerilog((services, lc) => lc.ReadFrom.Configuration(builder.
 | Scenario                      | Recommendation                                                      |
 | ----------------------------- | ------------------------------------------------------------------- |
 | Application logging setup     | Load `serilog` — `AddSerilog()` two-stage bootstrap                 |
-| Distributed tracing / metrics | Load `opentelemetry` — OTLP exporter                                |
-| Custom business metrics       | `IMeterFactory` + counters/histograms (`opentelemetry` skill)       |
 | Request tracing               | Correlation ID middleware (this skill)                              |
 | Liveness / readiness probes   | `/health/live` and `/health/ready` endpoints (this skill)           |
 | Health checks in a controller app | `MapHealthChecks(...).AllowAnonymous()` next to `MapControllers()` — no `HealthController` |
 | Logging inside controllers    | `ILogger<TController>` + `[LoggerMessage]`, business events only     |
-| Log storage                   | Seq (development), Elastic/Grafana/OTLP backend (production)        |
+| Log storage                   | Seq (development), Elasticsearch or Grafana Loki (production)       |
 | Log levels                    | Debug in dev, Information in staging, Warning default in production |

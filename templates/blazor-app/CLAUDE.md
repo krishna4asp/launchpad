@@ -130,7 +130,7 @@ Load these dotnet-claude-kit skills for context:
 - `configuration` — Options pattern, secrets management
 - `dependency-injection` — Service registration, scoped vs transient lifetimes
 - `ef-core` — DbContext patterns, query optimization, migrations
-- `logging` — Serilog, OpenTelemetry
+- `logging` — Serilog, health checks, correlation IDs
 - `workflow-mastery` — Parallel worktrees, verification loops, subagent patterns, context discipline
 - `instinct-system` — Capture corrections, instincts, and discoveries as persistent learning
 - `wrap-up` — Structured session handoff to `.claude/handoff.md`
