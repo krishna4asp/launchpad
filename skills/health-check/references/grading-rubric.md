@@ -13,7 +13,7 @@ or `medium` confidence after reading it.
   suspicious but has legitimate uses the detector cannot rule out — a catch block
   that logs and rethrows, an EF query in a command handler that may edit downstream.
 - **`suppressed` findings count for nothing**, but the report must state the count
-  (`// cwm:ignore <ID>` comments). Suppression must be visible, or it becomes a
+  (`// launchpad:ignore <ID>` comments). Suppression must be visible, or it becomes a
   way to game the grade silently.
 - Count every match per pattern. Never sample a few hits and extrapolate.
 
@@ -213,7 +213,7 @@ grade, so a reader can audit the judgement rather than trust it.
 | AP010 | 9   | 0          | 8      | 1    | 1 genuine read-only query; 8 in command handlers           |
 | AP004 | 2   | 0          | 0      | 2    | Real — `SystemSeeder` should take `TimeProvider`           |
 
-Suppressed lines: count of `// cwm:ignore` comments (0 if none). State it either way.
+Suppressed lines: count of `// launchpad:ignore` comments (0 if none). State it either way.
 
 ### Priority Recommendations
 

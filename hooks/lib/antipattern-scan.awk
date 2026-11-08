@@ -142,14 +142,15 @@ function applies(rule) {
     return 0
 }
 
-# An inline "// cwm:ignore" suppresses every rule on the line; naming rules
-# ("// cwm:ignore AP004") suppresses only those.
-function suppressed(raw, rule,    pos, rest) {
-    pos = index(raw, "cwm:ignore")
+# An inline "// launchpad:ignore" suppresses every rule on the line; naming rules
+# ("// launchpad:ignore AP004") suppresses only those.
+function suppressed(raw, rule,    marker, pos, rest) {
+    marker = "launchpad:ignore"
+    pos = index(raw, marker)
     if (pos == 0)
         return 0
 
-    rest = substr(raw, pos + 10)
+    rest = substr(raw, pos + length(marker))
     if (rest !~ /AP[0-9][0-9][0-9]/)
         return 1
 

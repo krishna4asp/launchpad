@@ -58,7 +58,7 @@ chmod +x .git/hooks/pre-commit
 | AP003 | `new HttpClient()` instead of `IHttpClientFactory` | warning |
 | AP004 | `DateTime.Now` / `DateTime.UtcNow` instead of `TimeProvider` | warning |
 
-To suppress a single line, add `// cwm:ignore` or `// cwm:ignore AP004` at its end. To report findings without blocking the commit, set `CWM_ANTIPATTERN_WARN_ONLY=1`.
+To suppress a single line, add `// launchpad:ignore` or `// launchpad:ignore AP004` at its end. To report findings without blocking the commit, set `LAUNCHPAD_ANTIPATTERN_WARN_ONLY=1`.
 
 Exit codes: `0` means no issues, `1` blocks the commit, and `2` means the hook couldn't run (for example, `lib/` is missing).
 

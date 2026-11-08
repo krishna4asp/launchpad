@@ -72,7 +72,7 @@ first — it is what stops a noisy count becoming a wrong letter.
 
 1. **Count every match.** Record the full match count per pattern — never sample
    a few hits and extrapolate.
-2. **Drop suppressed lines.** Lines marked `// cwm:ignore <ID>` count for nothing,
+2. **Drop suppressed lines.** Lines marked `// launchpad:ignore <ID>` count for nothing,
    but record how many there were so suppression stays visible.
 3. **Set aside `medium`.** These are review items, not grade inputs. Summarise
    them by category; do not fix or count them.

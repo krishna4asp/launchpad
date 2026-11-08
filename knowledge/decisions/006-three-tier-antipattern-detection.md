@@ -88,9 +88,9 @@ position:
 ### When to deviate
 
 - **Adopting the kit on an existing codebase?** Set
-  `CWM_ANTIPATTERN_WARN_ONLY=1` to report without blocking.
+  `LAUNCHPAD_ANTIPATTERN_WARN_ONLY=1` to report without blocking.
 - **A finding is genuinely correct-by-design?** Suppress the line with
-  `// cwm:ignore AP004`, not `--no-verify`.
+  `// launchpad:ignore AP004`, not `--no-verify`.
 - **Need enforcement your teammates cannot skip?** That is tier 3. A git hook
   lives in `.git/`, is not cloned, and is one `--no-verify` from irrelevant. CI
   is the only tier that binds a team.

@@ -10,11 +10,11 @@
 #
 # For a deeper check, run /verify.
 #
-# Suppress a line with a trailing "// cwm:ignore" or "// cwm:ignore AP004".
-# Set CWM_ANTIPATTERN_WARN_ONLY=1 to report findings without blocking.
+# Suppress a line with a trailing "// launchpad:ignore" or "// launchpad:ignore AP004".
+# Set LAUNCHPAD_ANTIPATTERN_WARN_ONLY=1 to report findings without blocking.
 #
 # Exit codes:
-#   0 — No issues found (or findings downgraded by CWM_ANTIPATTERN_WARN_ONLY)
+#   0 — No issues found (or findings downgraded by LAUNCHPAD_ANTIPATTERN_WARN_ONLY)
 #   1 — Issues found, commit blocked
 #   2 — The hook itself could not run
 
@@ -155,11 +155,11 @@ cat "$FINDINGS"
 echo ""
 echo "$ERRORS error(s), $WARNINGS warning(s)."
 
-if [[ "${CWM_ANTIPATTERN_WARN_ONLY:-0}" == "1" ]]; then
-    echo "CWM_ANTIPATTERN_WARN_ONLY=1 — reporting only, commit allowed."
+if [[ "${LAUNCHPAD_ANTIPATTERN_WARN_ONLY:-0}" == "1" ]]; then
+    echo "LAUNCHPAD_ANTIPATTERN_WARN_ONLY=1 — reporting only, commit allowed."
     exit 0
 fi
 
-echo "Fix the findings above, suppress a line with '// cwm:ignore <rule>',"
+echo "Fix the findings above, suppress a line with '// launchpad:ignore <rule>',"
 echo "or run 'git commit --no-verify' to skip this check."
 exit 1
