@@ -52,12 +52,12 @@ Check for pending migrations and uncaptured model changes.
 
 **Step 2: Review model changes**
 
-Use MCP tools instead of reading whole files:
+Search instead of reading whole files:
 
 ```
-find_symbol(name: entity or DbSet)        -- locate the changed entity
-get_type_hierarchy(typeName: entity)      -- check TPH/TPT/TPC inheritance changes
-find_references(symbolName: property)     -- assess downstream query impact
+Grep "class Order\b" or "DbSet<Order>"    -- locate the changed entity, then Read that range
+Grep ": Order\b"                          -- check TPH/TPT/TPC inheritance changes
+Grep "\.PropertyName\b" in *.cs           -- assess downstream query impact
 ```
 
 Confirm the change is one logical unit. If not, split into multiple migrations —
@@ -120,7 +120,7 @@ Never modify a migration that is already applied — create a new one.
 
 ### Flow B: .NET Version Upgrade
 
-1. **Assess** — `get_project_graph` to list all TFMs; flag mixed versions.
+1. **Assess** — Grep `<TargetFramework` across `*.csproj` and `Directory.Build.props` to list all TFMs; flag mixed versions.
 2. **Pre-flight** — all tests green, no pending EF migrations, dependencies
    checked for target-version compatibility, dedicated branch created
    (branch IS the rollback plan).
@@ -148,12 +148,12 @@ Never modify a migration that is already applied — create a new one.
 5. **Rollback** — git revert the package bump; never downgrade other packages
    to compensate.
 
-### MCP Tools Used
+### Tools Used
 
-- `find_symbol` / `find_references` — locate entities, assess schema-change impact
-- `get_type_hierarchy` — entity inheritance for TPH/TPT/TPC
-- `get_project_graph` — TFM audit before version upgrades
-- `get_diagnostics` — catch warnings after migration generation or upgrades
+- Grep for declarations and usages — locate entities, assess schema-change impact
+- Grep for `: BaseEntity` — entity inheritance for TPH/TPT/TPC
+- Grep `<TargetFramework` in `*.csproj` — TFM audit before version upgrades
+- `dotnet build --no-restore` — catch warnings after migration generation or upgrades
 
 ## Example
 

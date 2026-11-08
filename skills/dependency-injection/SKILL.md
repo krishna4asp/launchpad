@@ -212,7 +212,7 @@ builder.Services.AddScoped<OrderService>();
 | Cross-cutting behavior           | Decorator pattern                                                                             |
 | Convention-based registration    | Scrutor                                                                                       |
 | Runtime implementation selection | Factory delegate                                                                              |
-| Audit existing registrations     | `get_di_registrations` MCP tool — lifetimes, duplicates, captive-dependency risks in one call |
+| Audit existing registrations     | Grep `AddScoped`, `AddTransient`, `AddSingleton`, `AddKeyed*` — lifetimes, duplicates, captive-dependency risks |
 | Strongly-typed config            | `AddOptions<T>().BindConfiguration()`                                                         |
 | Dependency used by every action  | Controller constructor injection                                                              |
 | Dependency used by one action    | `[FromServices]` / `[FromKeyedServices]` on the action parameter                              |

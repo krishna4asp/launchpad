@@ -2,7 +2,7 @@
 name: health-check
 description: >
   Multi-dimensional health assessment for .NET projects with letter grades (A-F)
-  using Roslyn MCP tools. Evaluates 8 dimensions: build health, code quality,
+  using dotnet CLI and code search. Evaluates 8 dimensions: build health, code quality,
   architecture, test coverage, dead code, API surface, security posture, and
   documentation. Produces a structured report card with actionable recommendations.
   Load this skill when: "health check", "how healthy is this", "project health",
@@ -16,7 +16,7 @@ description: >
 
 Runs a data-driven health assessment across 8 dimensions, each graded A-F with
 the specific data points that produced the grade, and rolls them into a GPA.
-Gut feeling is not a grade: every dimension uses MCP tools or CLI commands, and
+Gut feeling is not a grade: every dimension uses CLI commands or code searches, and
 every grade below A comes with specific, prioritized, effort-estimated fixes —
 "add test classes for OrderService, PaymentProcessor, ShippingCalculator" is
 actionable; "improve test coverage" is not.
@@ -57,11 +57,11 @@ per dimension. For deep code-quality dimensions, delegate to the
 | #   | Dimension        | Data source                                                                                                     |
 | --- | ---------------- | --------------------------------------------------------------------------------------------------------------- |
 | 1   | Build Health     | `dotnet build --no-restore` — errors + warnings                                                                 |
-| 2   | Code Quality     | MCP `detect_antipatterns` — read `summary`, grade high-confidence only                                          |
-| 3   | Architecture     | MCP `get_project_graph` + `detect_circular_dependencies` (projects AND types)                                   |
-| 4   | Test Coverage    | MCP `get_test_coverage_map` — **check `applicable` first** (structural, not line coverage)                      |
-| 5   | Dead Code        | MCP `find_dead_code(scope: "solution")` — grade high-confidence; ignore `conventionFiltered`                    |
-| 6   | API Surface      | MCP `get_public_api` + `find_references` — overexposure, return-type consistency                                |
+| 2   | Code Quality     | Grep for the patterns in `knowledge/common-antipatterns.md` — grade confirmed findings only                     |
+| 3   | Architecture     | `dotnet list <project> reference` / `<ProjectReference` in *.csproj — direction and cycles                     |
+| 4   | Test Coverage    | Match production types to test classes (Glob/Grep), or `dotnet test --collect:"XPlat Code Coverage"`          |
+| 5   | Dead Code        | Build warnings IDE0051/IDE0052 + Grep confirming zero references; ignore convention-bound types                 |
+| 6   | API Surface      | Grep `public ` members + Grep usages across *.cs — overexposure, return-type consistency                        |
 | 7   | Security Posture | `dotnet list package --vulnerable --include-transitive` + secrets/auth spot check (deep dive: `/security-scan`) |
 | 8   | Documentation    | XML doc coverage on public APIs + README currency                                                               |
 
@@ -70,10 +70,10 @@ per dimension. For deep code-quality dimensions, delegate to the
 Detector output is evidence, not a grade. Pass every finding through this gate
 first — it is what stops a noisy count becoming a wrong letter.
 
-1. **Read `summary`, not the violation list.** `summary.byId` is complete even
-   when the list is truncated. Never sample a truncated list and extrapolate.
-2. **Drop `suppressed`.** Record the count and `summary.suppressionConfig` in the
-   report so suppression stays visible.
+1. **Count every match.** Record the full match count per pattern — never sample
+   a few hits and extrapolate.
+2. **Drop suppressed lines.** Lines marked `// cwm:ignore <ID>` count for nothing,
+   but record how many there were so suppression stays visible.
 3. **Set aside `medium`.** These are review items, not grade inputs. Summarise
    them by category; do not fix or count them.
 4. **Grade `high` only.** These are wrong regardless of context.

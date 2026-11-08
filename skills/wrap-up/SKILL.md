@@ -103,7 +103,7 @@ Good learning: "EF compiled queries don't work with Include()". Bad learning:
    (permanent rules), `.claude/instincts.md` (patterns at 0.7+ confidence).
    Missing files are fine: note it and start clean — never block on them.
 2. **Detect the solution** — Find `.slnx`/`.sln` (current dir, then parents,
-   then children) so Roslyn MCP tools work from the first prompt.
+   then children) so build and test commands work from the first prompt.
 3. **Present a resume summary** — Last session's work, pending tasks, active
    rules/instincts count, detected solution. Then ask what to work on —
    never auto-start pending work.

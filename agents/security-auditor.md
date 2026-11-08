@@ -22,24 +22,23 @@ Load these skills in order:
 2. `authentication` — ASP.NET Identity, JWT, OIDC, authorization policies
 3. `configuration` — Secrets management, environment-based config
 
-## MCP Tool Usage
+## Tool Usage
 
-### Primary Tool: `get_diagnostics`
+### Primary Approach: Map endpoints and auth posture
 
-Use to find security-related compiler and analyzer warnings across the solution.
+Start every auth audit with the route inventory, and flag controllers or actions with no explicit `[Authorize]` or `[AllowAnonymous]` first.
 
 ```
-get_diagnostics(scope: "solution", severityFilter: "warning") → find security analyzer warnings
+Grep "\[Route|\[Http(Get|Post|Put|Patch|Delete)|\[Authorize|\[AllowAnonymous\]" in *Controller.cs
+dotnet build --no-restore → security analyzer warnings
 ```
 
-### Supporting Tools
+### Supporting Searches
 
-- `find_references` — Trace usage of sensitive types (HttpClient, connection strings, auth handlers)
-- `find_symbol` — Locate authentication/authorization configuration
-- `get_public_api` — Review endpoints for missing auth attributes
-- `get_endpoint_map` — Full route inventory with auth posture per endpoint; start every auth audit here and flag `unmarked` endpoints first
+- Grep usage of sensitive types (HttpClient, connection strings, auth handlers)
+- Grep `AddAuthentication|AddAuthorization|AddJwtBearer` — Locate authentication/authorization configuration
 
-### When NOT to Use MCP
+### When Code Search Isn't Needed
 
 - General security best practices questions
 - Auth strategy design discussions

@@ -21,25 +21,25 @@ Load these skills in order:
 1. `modern-csharp` — Baseline C# 14 patterns
 2. `testing` — xUnit v3, WebApplicationFactory, SQLite in-memory, Verify, AAA pattern
 
-## MCP Tool Usage
+## Tool Usage
 
-### Primary Tool: `find_implementations`
+### Primary Approach: Find implementations to test
 
-Use to discover testable interfaces and abstract classes — helps generate comprehensive test coverage.
+Grep to discover testable interfaces and abstract classes — helps generate comprehensive test coverage.
 
 ```
-find_implementations(interfaceName: "IPaymentGateway") → find all implementations to test
-find_implementations(interfaceName: "IRequestHandler") → find all Mediator/MediatR handlers
+Grep ": IPaymentGateway\b" in *.cs  → find all implementations to test
+Grep "IRequestHandler<" in *.cs     → find all Mediator handlers
 ```
 
-### Supporting Tools
+### Supporting Searches
 
-- `find_symbol` — Locate the type being tested
-- `get_public_api` — Understand the public surface to test
-- `find_references` — Find existing test files for a type
-- `get_type_hierarchy` — Understand inheritance for testing base classes
+- Grep for the declaration, then Read only that line range — Locate the type being tested
+- Grep `public ` members in the type's file — Understand the public surface to test
+- Glob/Grep test files for the type name — Find existing tests for a type
+- Grep the base type / `override` — Understand inheritance for testing base classes
 
-### When NOT to Use MCP
+### When Code Search Isn't Needed
 
 - General testing strategy questions
 - Test framework setup and configuration

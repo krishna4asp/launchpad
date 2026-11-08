@@ -28,25 +28,24 @@ Load additional skills based on the error category:
 - Migration or DbContext errors → `ef-core`
 - Service registration or DI container errors → `dependency-injection`
 
-## MCP Tool Usage
+## Tool Usage
 
-### Primary Tool: `get_diagnostics`
+### Primary Tool: `dotnet build`
 
-Use first on every iteration to understand the full error context across the solution.
+Run first on every iteration to understand the full error context.
 
 ```
-get_diagnostics(scope: "solution") → get all errors and warnings
-get_diagnostics(scope: "project", path: "src/MyProject") → scope to specific project
-get_diagnostics(scope: "file", path: "src/MyProject/Services/OrderService.cs") → scope to specific file
+dotnet build --no-restore                  → all errors and warnings in the solution
+dotnet build src/MyProject --no-restore    → scope to a specific project
 ```
 
-### Supporting Tools
+### Supporting Searches
 
-- `find_symbol` — Locate types referenced in error messages (CS0246, CS0234)
-- `find_references` — Understand impact of a fix before applying it
-- `get_project_graph` — Understand project dependencies for missing reference errors (CS0012)
+- Grep for the type declaration (e.g. `class OrderService\b`) — Locate types referenced in error messages (CS0246, CS0234)
+- Grep for the symbol name across `*.cs` — Understand impact of a fix before applying it
+- `dotnet list <project> reference` or Grep `<ProjectReference` in `*.csproj` — Understand project dependencies for missing reference errors (CS0012)
 
-### When NOT to Use MCP
+### When Code Search Isn't Needed
 
 - Simple typo fixes visible in the error message
 - Missing `using` statements where the namespace is obvious

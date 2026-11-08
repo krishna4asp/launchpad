@@ -14,7 +14,7 @@ description: >
 
 1. **Observe before enforcing** — Never impose conventions without first analyzing the existing codebase. A project with 200 `internal sealed class` handlers should not get a new `public class` handler. Detect first, then match.
 2. **Project conventions override generic rules** — If the project uses `*Service` instead of `*Handler`, follow the project's convention even if the kit default is different. Explicit `.editorconfig` and `Directory.Build.props` rules always win.
-3. **Use MCP tools for analysis** — `get_public_api` reveals naming patterns, `get_project_graph` shows structure conventions, `detect_antipatterns` tracks quality trends. Tools provide objective data; file reads provide confirmation.
+3. **Search before reading** — Grep for type declarations reveals naming and modifier patterns, `<ProjectReference>` entries in `*.csproj` show structure conventions, and Grep for the patterns in `knowledge/common-antipatterns.md` tracks quality trends. Searches provide objective counts; targeted file reads provide confirmation.
 4. **Document findings** — After detecting conventions, suggest adding them to the project's CLAUDE.md. Undocumented conventions are lost when the original developers leave.
 5. **Consistency over perfection** — A project with consistent `snake_case` database columns is better than a project with half `snake_case` and half `PascalCase`. Match the existing pattern, even if another convention is theoretically superior.
 
@@ -27,7 +27,7 @@ Systematic analysis to understand a project's coding conventions. Run this when 
 **Step 1: Project Structure Analysis**
 
 ```
-→ get_project_graph
+→ Glob **/*.csproj, Grep <ProjectReference
   Detect:
   - Project naming: PascalCase? Dots? (MyApp.Domain vs Domain)
   - Layer organization: by layer (Domain/Application/Infrastructure) or by feature?
@@ -38,7 +38,7 @@ Systematic analysis to understand a project's coding conventions. Run this when 
 **Step 2: Type Naming Patterns**
 
 ```
-→ get_public_api (on 3-5 key types across different layers)
+→ Grep "(public|internal)( sealed)? (class|record|interface) \w+" (sample 3-5 key types across layers)
   Detect:
   - Class modifiers: sealed? internal? internal sealed?
   - Interface prefix: I* (standard) or no prefix?
@@ -146,12 +146,12 @@ csharp_style_prefer_primary_constructors = true:suggestion
 
 ### Anti-pattern Tracking
 
-Use `detect_antipatterns` to track recurring quality issues across sessions.
+Grep for the patterns in `knowledge/common-antipatterns.md` (or run `hooks/pre-commit-antipattern.sh`) to track recurring quality issues across sessions.
 
 **Periodic Check:**
 
 ```
-→ detect_antipatterns (scope: solution)
+→ Grep anti-patterns across the solution (DateTime.Now, new HttpClient(), async void, .Result)
   Track over time:
   - Are the same patterns recurring? (DateTime.Now keeps appearing)
   - Are new patterns emerging? (new HttpClient() in a new module)
@@ -188,7 +188,7 @@ When patterns recur, add explicit rules to CLAUDE.md:
 
 ```
 # GOOD — Detect first, then follow what exists
-→ get_public_api reveals: 8/8 handlers are `public class` implementing `IHandler<T>`
+→ Grep of handler declarations reveals: 8/8 handlers are `public class` implementing `IHandler<T>`
 "This project uses public handlers with interfaces. Matching that convention."
 ```
 
@@ -229,7 +229,7 @@ at Features/Shipping/ with all related files together."
 
 ```
 # GOOD — Document only patterns confirmed across multiple files
-→ get_public_api on 5 types: 100% use explicit types for non-obvious cases
+→ Targeted reads of 5 types: 100% use explicit types for non-obvious cases
 "Convention: Use explicit types for non-obvious cases (e.g., method returns),
 var for obvious cases (e.g., new MyClass()). Confirmed across 5 files."
 ```
@@ -238,13 +238,13 @@ var for obvious cases (e.g., new MyClass()). Confirmed across 5 files."
 
 | Scenario                                | Action                                                        | Tool                              |
 | --------------------------------------- | ------------------------------------------------------------- | --------------------------------- |
-| Joining existing project                | Run full convention detection flow                            | get_project_graph, get_public_api |
+| Joining existing project                | Run full convention detection flow                            | Glob/Grep csproj + declarations   |
 | Generating new code                     | Check detected conventions first                              | Previous detection results        |
-| Reviewing code                          | Flag convention deviations                                    | get_public_api + comparison       |
+| Reviewing code                          | Flag convention deviations                                    | Grep declarations + comparison    |
 | Convention conflict (kit vs project)    | **Project wins**                                              | —                                 |
 | Convention conflict (team disagreement) | Document both, suggest .editorconfig                          | —                                 |
 | No conventions detected                 | Use kit defaults, document them                               | architecture-advisor skill        |
-| Recurring anti-pattern                  | Add to CLAUDE.md conventions                                  | detect_antipatterns               |
+| Recurring anti-pattern                  | Add to CLAUDE.md conventions                                  | Grep anti-patterns                |
 | New team member onboarding              | Run detection, generate convention doc                        | Full detection flow               |
 | .editorconfig exists                    | Trust it, don't override                                      | Read .editorconfig                |
 | No .editorconfig                        | Suggest creating one based on detected patterns               | Detection + generation            |

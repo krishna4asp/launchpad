@@ -1,25 +1,25 @@
 ---
 alwaysApply: true
 description: >
-  Enforces MCP-first tool usage, subagent routing for parallel work,
+  Enforces search-before-read tool usage, subagent routing for parallel work,
   and agent selection guidance for .NET projects.
 ---
 
 # Agent & Tool Usage Rules
 
-## MCP Tools Before File Reading
+## Search Before Reading Files
 
-- **DO** use Roslyn MCP tools (`find_symbol`, `find_references`, `get_public_api`, `get_type_hierarchy`) before reading source files.
-  Rationale: MCP tools return focused, token-efficient results. Reading full files wastes context window.
+- **DO** use Grep and Glob to locate types, members, and usages before reading source files.
+  Rationale: Search results are focused and cheap. Reading full files wastes context window.
 
-- **DO** use `get_project_graph` before making any structural changes (new projects, moved references).
+- **DO** check project references (`dotnet list <project> reference` or `<ProjectReference>` entries) before making any structural changes (new projects, moved references).
   Rationale: Understanding the dependency tree prevents circular references and misplaced code.
 
-- **DO** use `get_diagnostics` after modifications instead of running `dotnet build` when possible.
-  Rationale: Roslyn diagnostics are faster and return structured data without build artifacts.
+- **DO** run `dotnet build` scoped to the changed project after modifications.
+  Rationale: A scoped build surfaces compiler errors and analyzer warnings quickly without building the whole solution.
 
-- **DON'T** read entire files to find a single method or type. Use `find_symbol` first.
-  Rationale: A 500-line file costs tokens. A symbol lookup costs almost nothing.
+- **DON'T** read entire files to find a single method or type. Grep for the declaration, then read only that range.
+  Rationale: A 500-line file costs tokens. A targeted search costs almost nothing.
 
 ## Subagent Routing
 

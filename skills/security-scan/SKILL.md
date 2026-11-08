@@ -63,7 +63,7 @@ the `authentication` and `configuration` skills.
 | 1   | Package vulnerabilities | A03 Supply Chain                                             | `dotnet list package --vulnerable --include-transitive`                                                              |
 | 2   | Secrets detection       | —                                                            | Pattern scan over .cs/.json/.yml/.xml/.config                                                                        |
 | 3   | OWASP code patterns     | A05 Injection, A08 Integrity, A04 Crypto, A01 Access Control | Source scan: raw SQL, `Html.Raw`, `BinaryFormatter`, MD5/SHA1, IDOR                                                  |
-| 4   | Auth configuration      | A07 Authentication, A01 Access Control                       | `get_endpoint_map` — every route's auth posture in one call; flag `unmarked` endpoints; then JWT validation settings |
+| 4   | Auth configuration      | A07 Authentication, A01 Access Control                       | Grep `[Route`/`[Http*`/`[Authorize`/`[AllowAnonymous]` in *Controller.cs; flag unmarked endpoints; then JWT settings |
 | 5   | CORS policy             | A02 Misconfiguration                                         | Wildcard origins, credentials combos, method/header breadth                                                          |
 | 6   | Data protection         | A04 Crypto, A09 Logging & Alerting                           | PII in logs, over-broad responses, plaintext sensitive storage                                                       |
 

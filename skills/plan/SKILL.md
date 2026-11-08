@@ -59,7 +59,7 @@ Identify every layer, module, and boundary the task touches:
 
 - Which projects/folders will have new or modified files?
 - Are there cross-cutting concerns (auth, caching, validation, logging)?
-- What existing code will be impacted? Use `find_references` and `find_callers` MCP tools for blast radius.
+- What existing code will be impacted? Grep the changed symbols across *.cs for blast radius.
 - Are there database migrations needed?
 
 ### Step 4: Produce the Plan

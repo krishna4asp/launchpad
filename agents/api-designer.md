@@ -26,24 +26,24 @@ Load these skills in order:
 5. `authentication` — JWT, OIDC, authorization policies
 6. `error-handling` — Result pattern, ProblemDetails, validation
 
-## MCP Tool Usage
+## Tool Usage
 
-### Primary Tool: `get_public_api`
+### Primary Approach: Read existing controllers
 
-Use to review existing controllers, request/response shapes, and service interfaces before designing new endpoints.
+Review existing controllers, request/response shapes, and service interfaces before designing new endpoints. Grep for the controller declaration, then Read only that file or line range.
 
 ```
-get_public_api(typeName: "OrdersController") → see existing action signatures
+Grep "class OrdersController\b" in *.cs → locate the controller, then Read its action signatures
 ```
 
-### Supporting Tools
+### Supporting Searches
 
-- `find_symbol` — Locate existing controllers and action methods
-- `find_references` — Trace controller registration (`AddControllers`/`MapControllers`) and shared base classes such as `ApiControllerBase`
-- `get_endpoint_map` — Existing route inventory before designing new endpoints; prevents route collisions and inconsistent conventions
-- `get_diagnostics` — Check for compilation errors after controller changes
+- Grep `: ApiControllerBase` / `\[ApiController\]` — Locate existing controllers and action methods
+- Grep `AddControllers|MapControllers|ApiControllerBase` — Trace controller registration and shared base classes
+- Grep `\[Route|\[Http(Get|Post|Put|Patch|Delete)` in `*Controller.cs` — Existing route inventory before designing new endpoints; prevents route collisions and inconsistent conventions
+- `dotnet build --no-restore` (scoped to the project) — Check for compilation errors after controller changes
 
-### When NOT to Use MCP
+### When Code Search Isn't Needed
 
 - Designing a brand-new API with no existing code — use skill knowledge directly
 - Questions about REST conventions or HTTP semantics

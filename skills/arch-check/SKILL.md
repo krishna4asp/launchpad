@@ -4,7 +4,7 @@ description: >
   Architecture conformance check: verifies an existing codebase against its
   declared architecture (VSA, Clean Architecture, DDD, Modular Monolith) —
   dependency direction, layer violations, module boundary leaks, and cycles —
-  using token-cheap Roslyn MCP analysis. Invoke when: "check architecture",
+  using targeted searches over project files and code. Invoke when: "check architecture",
   "architecture violations", "layer violations", "dependency direction",
   "module boundaries", "arch check", "is my architecture clean", "enforce
   architecture", "conformance check". For CHOOSING an architecture, use
@@ -50,7 +50,7 @@ report. The four supported baselines and their rules:
 **Step 2: Project-level dependency direction (cheapest, catches most)**
 
 ```
-get_project_graph()
+Grep "<ProjectReference" in **/*.csproj      -- or: dotnet list <project> reference
 ```
 
 Map every project reference against the baseline's allowed arrows. A single
@@ -60,7 +60,7 @@ makes every downstream violation possible.
 **Step 3: Cycles**
 
 ```
-detect_circular_dependencies()
+Follow the ProjectReference edges from Step 2 and look for any path back to its start
 ```
 
 Cycles are violations in every baseline. Report the full chain.
@@ -70,11 +70,11 @@ Cycles are violations in every baseline. Report the full chain.
 Project references can be clean while code still leaks. Probe the risky edges:
 
 ```
-get_dependency_graph(symbolName: <a Domain entity>, depth: 2)
+Grep "^using (Microsoft.EntityFrameworkCore|System.Net.Http|.*Infrastructure)" in Domain/
    -- Domain types pulling in EF Core, HttpClient, or Infrastructure namespaces?
-find_references(symbolName: <a module-internal type>)
+Grep <a module-internal type name> outside its module folder
    -- referenced from outside its module?
-detect_antipatterns()
+Grep for knowledge/common-antipatterns.md patterns
    -- known structural smells as supporting evidence
 ```
 
@@ -85,7 +85,7 @@ types inside two or three feature folders.
 **Step 5: Presentation boundary**
 
 ```
-get_endpoint_map()
+Grep "\[Route|\[Http(Get|Post|Put|Patch|Delete)|\[Authorize|\[AllowAnonymous\]" in **/*Controller.cs
 ```
 
 Endpoints must live only in the host/Api layer (Clean) or inside their owning
@@ -106,13 +106,13 @@ Each finding: evidence (file:line), why it violates the baseline, and the fix
 (move the code, invert with an interface, introduce a contracts project, raise
 an integration event). Offer to fix CRITICAL items immediately.
 
-### MCP Tools Used
+### Tools Used
 
-- `get_project_graph` — reference-direction audit (the backbone)
-- `detect_circular_dependencies` — cycle detection
-- `get_dependency_graph` / `find_references` — namespace-level leak probes
-- `get_endpoint_map` — presentation boundary + auth posture
-- `detect_antipatterns` — supporting structural evidence
+- Grep `<ProjectReference` / `dotnet list reference` — reference-direction audit (the backbone)
+- Walking the reference edges — cycle detection
+- Grep for `using` directives and type names — namespace-level leak probes
+- Grep routing and auth attributes in controllers — presentation boundary + auth posture
+- Grep for known anti-patterns — supporting structural evidence
 
 ## Example
 
@@ -121,12 +121,12 @@ User: /arch-check
 
 Claude: Baseline from CLAUDE.md: Clean Architecture (4 projects).
 
-  Project graph (get_project_graph)...
+  Project references (*.csproj)...
   CRITICAL  Domain → Infrastructure reference (Domain.csproj:14)
             Breaks the dependency rule; makes Domain untestable in isolation.
             Fix: invert — define IEmailSender in Application, implement in
             Infrastructure.
-  Cycles (detect_circular_dependencies)... none.
+  Cycles... none.
   Leak probes on 4 Domain entities...
   HIGH      Order.cs:8 uses Microsoft.EntityFrameworkCore (Domain must stay
             persistence-ignorant). Fix: move the [Index] config to

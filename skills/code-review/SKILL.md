@@ -1,9 +1,9 @@
 ---
 name: code-review
 description: >
-  MCP-powered multi-dimensional code review for .NET projects. Uses Roslyn
-  analysis tools for antipatterns, diagnostics, references, and dependency
-  graphs combined with structured manual review. Prioritizes effort with
+  Multi-dimensional code review for .NET projects. Combines anti-pattern
+  searches, build diagnostics, reference and dependency checks with
+  structured manual review. Prioritizes effort with
   blast-radius scoring — data access, security, concurrency, and integration
   boundaries before style — and produces severity-categorized findings with
   actionable fixes. Use when: "review", "code review", "PR review", "review
@@ -11,12 +11,12 @@ description: >
   should I review", "review priorities", "blast radius", "critical path".
 ---
 
-# /code-review — MCP-Powered Code Review
+# /code-review — Multi-Dimensional Code Review
 
 ## What
 
-Performs a multi-dimensional code review combining Roslyn MCP analysis with
-structured manual review. Effort follows the 80/20 rule: the 20% of code that
+Performs a multi-dimensional code review combining automated checks (build
+diagnostics, anti-pattern searches) with structured manual review. Effort follows the 80/20 rule: the 20% of code that
 causes 80% of incidents (data access, security, concurrency, integration
 boundaries) gets thorough review; style and formatting are left to tooling.
 
@@ -48,11 +48,11 @@ line count. A one-line middleware change outranks a 300-line rename.
 | Medium       | New feature following existing patterns, bug fix, new endpoint      | Standard — checklist pass      |
 | Low          | Docs, formatting, renames, logging statements                       | Glance — build + tests pass    |
 
-### Step 2: MCP Analysis (before reading any file)
+### Step 2: Automated Checks (before reading any file)
 
 ```
-detect_antipatterns(projectFilter: "affected-project")   → async void, DateTime.Now, new HttpClient(), broad catch
-get_diagnostics(scope: "project", path: "affected-project") → new warnings, nullability issues
+Grep changed files for knowledge/common-antipatterns.md patterns → async void, DateTime.Now, new HttpClient(), broad catch
+dotnet build <affected-project> --no-restore                     → new warnings, nullability issues
 ```
 
 Distinguish newly introduced findings from pre-existing ones — focus on new.
@@ -62,8 +62,8 @@ Distinguish newly introduced findings from pre-existing ones — focus on new.
 For each modified public API:
 
 ```
-find_references(symbolName: "ModifiedType")              → count consumers; high count = high risk
-get_dependency_graph(symbolName: "ModifiedMethod", depth: 2) → ripple effects
+Grep "\bModifiedType\b" in *.cs      → count consumers; high count = high risk
+Grep callers of "ModifiedMethod(", then their callers → ripple effects
 ```
 
 Check whether callers handle changed return types and new error cases.
@@ -71,11 +71,12 @@ Check whether callers handle changed return types and new error cases.
 ### Step 4: Architecture Compliance
 
 Verify dependency direction (Domain → nothing; Infrastructure → Application →
-Domain) via `get_project_graph` and `detect_circular_dependencies`. Per
+Domain) via the `<ProjectReference>` entries in each `*.csproj` (or
+`dotnet list <project> reference`), and check for cycles. Per
 architecture: VSA features don't cross-reference; Clean Architecture domain has
 zero project references; Modular Monolith modules communicate only via
-integration events — `find_references` on a module's DbContext should resolve
-only inside that module.
+integration events — Grep for a module's DbContext should match only inside
+that module.
 
 ### Step 5: Manual Review — Priority Order
 
@@ -128,8 +129,8 @@ bury a security bug under naming nits.
 - [Always include — reinforce good patterns]
 ```
 
-**Quick review** (1-2 files, low blast radius): run `detect_antipatterns` +
-`get_diagnostics`, read for correctness, output Summary + Issues + What's Good.
+**Quick review** (1-2 files, low blast radius): run the anti-pattern Grep +
+`dotnet build`, read for correctness, output Summary + Issues + What's Good.
 
 ## Example
 
@@ -137,7 +138,7 @@ bury a security bug under naming nits.
 User: /code-review the changes in this PR
 
 Claude: 7 changed files across 3 projects. CreateOrder touches data access
-and a public endpoint — High blast radius. Running MCP analysis...
+and a public endpoint — High blast radius. Running automated checks...
 
 ## Code Review: Order Processing Feature
 

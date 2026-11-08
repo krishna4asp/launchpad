@@ -91,8 +91,8 @@ A01:2025 — Broken Access Control (IDOR)
 ```
 CHECKLIST:
 1. All endpoints have explicit auth attributes
-   - find_references("AllowAnonymous") — list deliberately public endpoints
-   - find_references("Authorize") — list protected endpoints
+   - Grep "[AllowAnonymous]" in *Controller.cs — list deliberately public endpoints
+   - Grep "[Authorize" in *Controller.cs — list protected endpoints
    - Gap: endpoints with neither (behavior depends on ambient global config)
 
 2. JWT validation is strict

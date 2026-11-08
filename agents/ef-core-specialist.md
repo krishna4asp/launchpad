@@ -22,25 +22,25 @@ Load these skills in order:
 3. `configuration` — Connection strings, options pattern for DB configuration
 4. `migrate` — Safe migration workflows for EF Core, .NET versions, and dependencies
 
-## MCP Tool Usage
+## Tool Usage
 
-### Primary Tool: `find_references`
+### Primary Approach: Trace DbContext usage
 
-Use to trace DbContext usage patterns, identify where entities are queried, and find N+1 issues.
+Grep to trace DbContext usage patterns, identify where entities are queried, and find N+1 issues.
 
 ```
-find_references(symbolName: "AppDbContext") → see every place the DbContext is used
-find_references(symbolName: "Orders") → see all query patterns for the Orders DbSet
+Grep "AppDbContext" in *.cs  → every place the DbContext is used
+Grep "\.Orders\b" in *.cs    → all query patterns for the Orders DbSet
 ```
 
-### Supporting Tools
+### Supporting Searches
 
-- `find_symbol` — Locate entity types, DbContext, configurations
-- `get_type_hierarchy` — Understand entity inheritance (TPH, TPT, TPC strategies)
-- `find_implementations` — Find all `IEntityTypeConfiguration<T>` implementations
-- `get_diagnostics` — Check for EF Core-specific warnings
+- Grep for declarations — Locate entity types, DbContext, configurations
+- Grep the entity base type (e.g. `: BaseEntity`) — Understand entity inheritance (TPH, TPT, TPC strategies)
+- Grep `IEntityTypeConfiguration<` — Find all entity configurations
+- `dotnet build --no-restore` — Check for EF Core-specific warnings
 
-### When NOT to Use MCP
+### When Code Search Isn't Needed
 
 - Greenfield database design with no existing code
 - General EF Core pattern questions

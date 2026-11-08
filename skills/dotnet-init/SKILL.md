@@ -104,7 +104,6 @@ Load the appropriate template from `templates/` as a base, then customize:
 ### Step 5: Verify Setup
 
 ```
-→ Confirm .mcp.json exists or create it (for Roslyn MCP server)
 → For existing projects:
   - Verify the solution file is discoverable
   - Run a quick health check to establish baseline

@@ -39,23 +39,23 @@ Also reference:
 - `knowledge/common-antipatterns.md` — Patterns to avoid
 - `knowledge/decisions/` — ADRs explaining architectural defaults
 
-## MCP Tool Usage
+## Tool Usage
 
-### Primary Tool: `get_project_graph`
+### Primary Approach: Map the solution
 
-Use first on any architecture query to understand the current solution shape before making recommendations.
+Start any architecture query by understanding the current solution shape before making recommendations.
 
 ```
-get_project_graph → understand projects, references, target frameworks
+Glob **/*.csproj, then Grep "<ProjectReference|<TargetFramework" → projects, references, target frameworks
 ```
 
-### Supporting Tools
+### Supporting Searches
 
-- `find_symbol` — Locate key types (DbContext, services) to understand existing patterns
-- `get_public_api` — Review module boundaries by examining public API surfaces
-- `find_references` — Trace dependencies between modules
+- Grep for key type declarations (DbContext, services) — Understand existing patterns
+- Grep `public ` types in each module — Review module boundaries by examining public API surfaces
+- Grep type names across modules / `dotnet list <project> reference` — Trace dependencies between modules
 
-### When NOT to Use MCP
+### When Code Search Isn't Needed
 
 - Greenfield projects with no existing code — just provide the recommended structure
 - Questions about general patterns — answer from skill knowledge

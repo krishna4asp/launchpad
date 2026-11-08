@@ -3,7 +3,7 @@ name: outdated
 description: >
   Dependency health report for .NET solutions: outdated NuGet packages,
   vulnerable versions, and commercial-license traps (MediatR, MassTransit,
-  FluentAssertions, AutoMapper) — powered by the get_nuget_packages MCP tool.
+  FluentAssertions, AutoMapper) — powered by `dotnet list package`.
   Invoke when: "outdated packages", "check dependencies", "stale packages",
   "package audit", "dependency health", "are my packages up to date",
   "license check", "vulnerable packages", "nuget audit".
@@ -16,8 +16,8 @@ description: >
 A three-layer dependency health report:
 
 1. **Inventory** — every `PackageReference` per project, with TFMs and central
-   package management awareness, via the `get_nuget_packages` MCP tool (no
-   network, token-cheap).
+   package management awareness, via `dotnet list package` and the
+   `.csproj` / `Directory.Packages.props` files.
 2. **Staleness + vulnerabilities** — current vs latest stable, and known CVEs,
    via the `dotnet` CLI.
 3. **License screen** — flags packages that moved to commercial licenses so an
@@ -37,16 +37,16 @@ second, staleness last — with a recommended action per row.
 
 ## How
 
-**Step 1: Inventory (MCP, no network)**
+**Step 1: Inventory**
 
 ```
-get_nuget_packages()                          -- whole solution
-get_nuget_packages(projectFilter: "Api")      -- or one project
+dotnet list package                           -- whole solution
+dotnet list src/Api/Api.csproj package        -- or one project
 ```
 
-Returns per-project `{Name, TargetFramework, Cpm, Packages: [{Id, Version}]}`.
-Note `Cpm: true` — updates then belong in `Directory.Packages.props`, not the
-csproj. Flag mixed TFMs across projects while you're here.
+Lists each project's target framework and `PackageReference`s. If a
+`Directory.Packages.props` with `<ManagePackageVersionsCentrally>true` exists,
+updates belong there, not in the csproj. Flag mixed TFMs across projects while you're here.
 
 **Step 2: Staleness and vulnerabilities (CLI)**
 
@@ -90,17 +90,18 @@ Offer to execute updates via `/migrate` Flow C — one package at a time,
 `dotnet build && dotnet test` between each. Never batch major updates:
 batched failures are unattributable.
 
-### MCP Tools Used
+### Tools Used
 
-- `get_nuget_packages` — inventory, CPM detection, TFM audit
-- `get_diagnostics` — verify the solution still compiles clean after updates
+- `dotnet list package` (`--outdated`, `--vulnerable`, `--include-transitive`) — inventory, staleness, CVEs
+- Grep `<ManagePackageVersionsCentrally>` / `<TargetFramework>` — CPM detection, TFM audit
+- `dotnet build --no-restore` — verify the solution still compiles clean after updates
 
 ## Example
 
 ```
 User: /outdated
 
-Claude: Inventorying packages (get_nuget_packages)...
+Claude: Inventorying packages (dotnet list package)...
   3 projects, CPM enabled (Directory.Packages.props), all net10.0.
 
   Checking versions and CVEs...

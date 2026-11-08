@@ -120,12 +120,12 @@ run nested build-fix and test-fix loops). Nested loops get a smaller budget
 | Skill | `instinct-system`  | Capture fix patterns in MEMORY.md          |
 | Agent | `dotnet-architect` | Consulted for architectural error patterns |
 
-### MCP Tools Used
+### Tools Used
 
-- `get_diagnostics` — Compiler errors/warnings scoped to file or project
-- `find_symbol` — Locate moved or renamed types
-- `find_references` — Assess blast radius of a broken API change
-- `get_project_graph` — Dependency order for fixing reference errors
+- `dotnet build --no-restore` — Compiler errors/warnings, scoped to the project
+- Grep for the declaration (e.g. `class OrderService\b`) — Locate moved or renamed types
+- Grep the symbol name across *.cs — Assess blast radius of a broken API change
+- `dotnet list <project> reference` — Dependency order for fixing reference errors
 
 ## Example
 

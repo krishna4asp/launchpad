@@ -30,7 +30,7 @@ Commit: `chore: remove unused using statements`
 ## Step 3: Fix Analyzer Warnings
 
 ```
-MCP: get_diagnostics(scope: "solution", severityFilter: "warning")
+dotnet build --no-restore   # collect warnings for the whole solution
 ```
 
 Triage by category, compiler warnings first:
@@ -47,13 +47,14 @@ Commit: `chore: fix analyzer warnings`
 ## Step 4: Remove Dead Code
 
 ```
-MCP: find_dead_code(scope: "solution", kind: "all")
+dotnet build --no-restore   # IDE0051/IDE0052 flag unused private members
+Grep: each public type/member name across *.cs — zero hits outside its declaration = candidate
 ```
 
-**Safety check before every removal** — Roslyn cannot see string-based usage:
+**Safety check before every removal** — a reference search cannot see string-based usage:
 
 ```
-1. find_references(symbolName: "DeadType") — confirm zero compile-time refs
+1. Grep "DeadType" across *.cs — confirm zero compile-time refs
 2. Grep for string-based usage:
    - nameof(DeadType) in attributes or logging
    - Reflection: Type.GetType("DeadType"), Activator.CreateInstance
@@ -84,8 +85,8 @@ Commit: `chore: resolve TODO comments`
 ## Step 6: Seal Non-Inherited Classes
 
 ```
-MCP: find_dead_code(scope: "solution", kind: "type") — candidate type list
-MCP: get_type_hierarchy(typeName: "EachClass") — check for derived types
+Grep: "(public|internal) class " (not sealed/static/abstract) in *.cs — candidate list
+Grep: ": EachClass\b" in *.cs — check for derived types
 ```
 
 Seal every class that has no derived types, is not a base class by design (no
@@ -107,7 +108,7 @@ Before sealing, also grep test projects for inheritance — a class tests derive
 from must stay open:
 
 ```
-MCP: get_type_hierarchy(typeName: "OrderService") → no derived types in production
+Grep: ": OrderService\b" in production code → no derived types
 Grep: "OrderService" in test projects → inheritance found? Skip sealing.
 ```
 
@@ -117,7 +118,7 @@ Commit: `chore: seal non-inherited classes`
 ## Step 7: Propagate CancellationToken
 
 ```
-MCP: detect_antipatterns(severity: "warning") — filter "missing CancellationToken"
+Grep: "async Task" methods whose parameter list lacks CancellationToken
 ```
 
 Trace async chains from entry points (endpoints, handlers) through services to

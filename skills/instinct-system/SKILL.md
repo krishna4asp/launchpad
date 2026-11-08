@@ -51,7 +51,7 @@ One learning system, three tiers. Every signal Claude receives during work — a
 1. OBSERVE     — "This handler is internal sealed class. Convention?"
 2. HYPOTHESIZE — Write to .claude/instincts.md at confidence 0.3:
                  - Use `sealed` on handler classes | confidence: 0.3 | seen: 1 | last: 2026-06-12
-3. SEEK        — Actively check 2-3 related files (find_symbol, get_public_api).
+3. SEEK        — Actively check 2-3 related files (Grep for the declaration, then Read only that range).
                  Passive observation is not enough.
 4. ADJUST      — Confirmed: raise per the adjustment track.
                  Contradicted: halve confidence, note the exception.

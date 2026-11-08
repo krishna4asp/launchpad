@@ -5,18 +5,17 @@ the kit — no other skill defines its own.
 
 ## The Cardinal Rule: Never Grade a Raw Count
 
-A detector count is evidence, not a grade. Every tool in this kit returns a
-`confidence` field and a `summary` histogram for exactly this reason.
+A pattern-match count is evidence, not a grade. Classify each match as `high`
+or `medium` confidence after reading it.
 
 - **Grade on `high` confidence findings only.** These are wrong regardless of context.
 - **`medium` findings are review items, never grade inputs.** The pattern is
   suspicious but has legitimate uses the detector cannot rule out — a catch block
   that logs and rethrows, an EF query in a command handler that may edit downstream.
 - **`suppressed` findings count for nothing**, but the report must state the count
-  and the config path. Suppression must be visible, or it becomes a way to game
-  the grade silently.
-- Read `summary.byId` — it is complete even when the violation list is truncated.
-  Never sample a truncated list and extrapolate.
+  (`// cwm:ignore <ID>` comments). Suppression must be visible, or it becomes a
+  way to game the grade silently.
+- Count every match per pattern. Never sample a few hits and extrapolate.
 
 If a raw signal contradicts an invariant documented in the target repo's
 CLAUDE.md, **the invariant wins pending verification**. Verify, then grade.
@@ -37,9 +36,9 @@ Tool: `dotnet build --no-restore` — metric: error count, warning count.
 
 ### Dimension 2: Code Quality
 
-Tool: MCP `detect_antipatterns` — metric: **high-confidence** findings per 1K
-production lines. The tool defaults to production scope; generated code is never
-reported and test/migration code is excluded.
+Method: Grep production code for the patterns in `knowledge/common-antipatterns.md`
+(the same rules `hooks/pre-commit-antipattern.sh` scans for) — metric: **confirmed**
+findings per 1K production lines. Exclude generated, test and migration code.
 
 | Grade | Criteria                   |
 | ----- | -------------------------- |
@@ -63,8 +62,9 @@ broad catch blocks, string interpolation in logging, missing CancellationToken.
 
 ### Dimension 3: Architecture
 
-Tools: MCP `get_project_graph` (dependency direction), `detect_circular_dependencies`
-at both `scope: "projects"` and `scope: "types"`.
+Method: `dotnet list <project> reference` (or Grep `<ProjectReference` in *.csproj)
+for dependency direction and project cycles; Grep `using` directives for type-level
+cycles across layers.
 
 | Grade | Criteria                                                                |
 | ----- | ----------------------------------------------------------------------- |
@@ -76,13 +76,14 @@ at both `scope: "projects"` and `scope: "types"`.
 
 ### Dimension 4: Test Coverage
 
-Tool: MCP `get_test_coverage_map(projectFilter: each production project)` —
-metric: % of production types with corresponding test classes.
+Method: list production types, then Glob/Grep the test projects for matching
+test classes (or run `dotnet test --collect:"XPlat Code Coverage"`) — metric: %
+of production types with corresponding test classes.
 
-**Check `applicable` first.** When the tool returns `applicable: false`, the
-structural metric is invalid for this codebase and the percentage is meaningless.
-Record the dimension as **Not assessed**, quote `notApplicableReason` and
-`testMethodCount`, and **exclude it from the GPA** (divide by the number of
+**Check applicability first.** When tests are organised by feature or scenario
+rather than per type, the structural metric is invalid for this codebase and the
+percentage is meaningless. Record the dimension as **Not assessed**, state why and
+the test method count, and **exclude it from the GPA** (divide by the number of
 dimensions actually graded). A structurally invalid metric must never become an F.
 
 | Grade        | Criteria                                |
@@ -103,13 +104,13 @@ audit; do not substitute the structural number.
 
 ### Dimension 5: Dead Code
 
-Tool: MCP `find_dead_code(scope: "solution", kind: "all", maxResults: 50)`.
+Method: build warnings IDE0051/IDE0052 (unused private members), then Grep each
+candidate type or member across *.cs to confirm zero references.
 
-Grade on `high`-confidence symbols. `conventionFiltered` reports symbols the tool
-excluded because a reference search cannot see how they are bound (EF entity
-configurations, hosted services, migrations, extension-method hosts) — these are
-**not** debt and are never penalised. `medium` symbols carry a `note` explaining
-which convention their name matches; verify before removing.
+Grade on confirmed symbols only. Symbols bound by convention, which a reference
+search cannot see (EF entity configurations, hosted services, migrations,
+extension-method hosts, DI scanning), are **not** debt and are never penalised;
+verify before removing.
 
 | Grade | Criteria         |
 | ----- | ---------------- |
@@ -121,7 +122,8 @@ which convention their name matches; verify before removing.
 
 ### Dimension 6: API Surface
 
-Tools: MCP `get_public_api` (design review), `find_references` (overexposure).
+Method: Grep `public ` members per type (design review), Grep usages across *.cs
+(overexposure — public types used only inside their own project).
 
 | Grade | Criteria                                                         |
 | ----- | ---------------------------------------------------------------- |
@@ -138,8 +140,8 @@ public setters on types that should be immutable.
 
 ### Dimension 7: Security Posture
 
-Tools: `dotnet list package --vulnerable --include-transitive`, MCP
-`detect_antipatterns` (security patterns), scan for hardcoded secrets and
+Tools: `dotnet list package --vulnerable --include-transitive`, Grep for
+security anti-patterns, scan for hardcoded secrets and
 missing auth attributes.
 
 | Grade | Criteria                                                           |
@@ -183,7 +185,7 @@ GPA = average across the dimensions **actually graded**. Dimensions marked
 ```markdown
 ## Project Health Report
 
-**Project:** MyApp | **Date:** 2026-03-04 | **Assessed by:** Claude (MCP-assisted)
+**Project:** MyApp | **Date:** 2026-03-04 | **Assessed by:** Claude
 
 ### Grades
 
@@ -211,7 +213,7 @@ grade, so a reader can audit the judgement rather than trust it.
 | AP010 | 9   | 0          | 8      | 1    | 1 genuine read-only query; 8 in command handlers           |
 | AP004 | 2   | 0          | 0      | 2    | Real — `SystemSeeder` should take `TimeProvider`           |
 
-Suppression config: `.cwm-navigator.json` (none / path). State it either way.
+Suppressed lines: count of `// cwm:ignore` comments (0 if none). State it either way.
 
 ### Priority Recommendations
 

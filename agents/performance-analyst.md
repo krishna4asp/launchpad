@@ -26,25 +26,25 @@ Also reference:
 
 - `knowledge/common-antipatterns.md` — Performance-related anti-patterns
 
-## MCP Tool Usage
+## Tool Usage
 
-### Primary Tool: `find_references`
+### Primary Approach: Find hot paths
 
-Use to find hot paths — trace heavily-used types and methods to identify optimization targets.
+Grep heavily-used types and methods to identify optimization targets.
 
 ```
-find_references(symbolName: "GetOrderAsync") → see how often and where this method is called
-find_references(symbolName: "HttpClient") → find HTTP call sites that may need caching
+Grep "GetOrderAsync" in *.cs → see how often and where this method is called
+Grep "HttpClient" in *.cs    → find HTTP call sites that may need caching
 ```
 
-### Supporting Tools
+### Supporting Searches
 
-- `find_symbol` — Locate performance-critical types
-- `get_public_api` — Review API surface for unnecessary allocations in signatures
-- `get_diagnostics` — Find performance-related analyzer warnings
-- `get_di_registrations` — Audit lifetimes for captive dependencies (singleton holding scoped) — a classic hidden performance/correctness bug
+- Grep for declarations, then Read only that line range — Locate performance-critical types
+- Grep `public ` members in the type's file — Review API surface for unnecessary allocations in signatures
+- `dotnet build --no-restore` — Find performance-related analyzer warnings
+- Grep `Add(Scoped|Transient|Singleton)|AddKeyed` — Audit lifetimes for captive dependencies (singleton holding scoped) — a classic hidden performance/correctness bug
 
-### When NOT to Use MCP
+### When Code Search Isn't Needed
 
 - General performance advice
 - Caching strategy design

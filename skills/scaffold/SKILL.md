@@ -60,7 +60,7 @@ Confirm with the user before generating (skip anything the plan already answers)
 
 ### Step 3: Learn Conventions
 
-Use the `convention-learner` skill and MCP tools to check:
+Use the `convention-learner` skill and code search to check:
 
 - Naming patterns (`*Handler`, `*Service`, `*Controller`, `*Command`, `*Query`)
 - Folder structure, file organization, access modifiers, sealed conventions

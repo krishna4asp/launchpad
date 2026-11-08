@@ -26,7 +26,7 @@ Three rules make it safe:
 2. **Commit per step** — each step is its own commit, so a bad Step 4 reverts
    without losing Steps 1-3.
 3. **Safe removals only** — before deleting "dead" code, check for reflection,
-   DI-convention, and serialization usage that Roslyn cannot see.
+   DI-convention, and serialization usage that a reference search cannot see.
 
 Per-step commands, safety checklists, and code examples live in
 `references/cleanup-steps.md` — read it before executing.
@@ -59,11 +59,11 @@ Per-step commands, safety checklists, and code examples live in
 | --- | --------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------- |
 | 1   | Format all code             | `dotnet format`                                                            | `chore: apply dotnet format`                              |
 | 2   | Remove unused usings        | `dotnet format analyzers --diagnostics IDE0005`                            | `chore: remove unused using statements`                   |
-| 3   | Fix analyzer warnings       | MCP `get_diagnostics` → triage by category                                 | `chore: fix analyzer warnings`                            |
-| 4   | Remove dead code            | MCP `find_dead_code` + **safety check** (reflection/DI/serialization grep) | `chore: remove dead code`                                 |
+| 3   | Fix analyzer warnings       | `dotnet build --no-restore` warnings → triage by category                  | `chore: fix analyzer warnings`                            |
+| 4   | Remove dead code            | IDE0051/IDE0052 + Grep refs + **safety check** (reflection/DI/serialization) | `chore: remove dead code`                                 |
 | 5   | Resolve TODOs               | grep TODO/HACK/FIXME → fix, file issue, or delete                          | `chore: resolve TODO comments`                            |
-| 6   | Seal non-inherited classes  | MCP `get_type_hierarchy` per candidate + test-project grep                 | `chore: seal non-inherited classes`                       |
-| 7   | Propagate CancellationToken | MCP `detect_antipatterns` → trace async chains                             | `chore: propagate CancellationToken through async chains` |
+| 6   | Seal non-inherited classes  | Grep for derived types (`: ClassName`) + test-project grep                 | `chore: seal non-inherited classes`                       |
+| 7   | Propagate CancellationToken | Grep async methods missing `CancellationToken` → trace async chains        | `chore: propagate CancellationToken through async chains` |
 
 After every step: `dotnet build` + `dotnet test`, then commit. If a step breaks
 the build or tests, fix or revert that step before continuing — never carry a
@@ -99,7 +99,7 @@ Step 1: dotnet format — 23 files reformatted. Build + tests green. Committed.
 Step 2: IDE0005 — 47 unused usings removed across 18 files. Green. Committed.
 Step 3: 12 warnings triaged: 8 nullability fixed with null checks,
   3 unused vars removed, 1 CS0618 migrated off the obsolete API. Committed.
-Step 4: find_dead_code → 9 candidates. Safety check: PaymentProcessor is
+Step 4: IDE0051/IDE0052 + reference grep → 9 candidates. Safety check: PaymentProcessor is
   registered via DI convention — kept. Removed 3 types, 5 methods. Committed.
 Step 5: 6 TODOs → 2 fixed, 3 became issues (#141-#143), 1 stale removed. Committed.
 Step 6: 14 classes sealed (2 skipped: xUnit fixture base, virtual members). Committed.

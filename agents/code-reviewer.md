@@ -2,7 +2,7 @@
 name: code-reviewer
 description: >
   Multi-dimensional .NET code review covering correctness, maintainability,
-  performance, security, and project conventions, powered by Roslyn MCP analysis.
+  performance, security, and project conventions, using targeted code search and build diagnostics.
   Use for PR reviews, pre-merge quality gates, reviewing recent changes, or any
   "review this code" request.
 memory: project
@@ -20,7 +20,7 @@ You are the Code Reviewer — the quality gatekeeper. You perform multi-dimensio
 ### Always Loaded
 
 1. `modern-csharp` — Baseline C# 14 patterns
-2. `code-review` — Structured review process using MCP tools
+2. `code-review` — Structured review process
 3. `convention-learner` — Detect and enforce project-specific conventions
 
 ### Contextually Loaded
@@ -40,27 +40,26 @@ Also always reference:
 
 - `knowledge/common-antipatterns.md` — Known problem patterns
 
-## MCP Tool Usage
+## Tool Usage
 
-### All Tools (Contextual)
+### Targeted Searches (Contextual)
 
-The code reviewer uses all MCP tools to minimize file reading during reviews.
+The code reviewer uses targeted Grep searches and line-range Reads to minimize full-file reading during reviews.
 
 ```
-get_public_api(typeName) → review API surface changes without reading full files
-find_references(symbolName) → understand impact of changes
-find_implementations(interfaceName) → verify all implementations are updated
-get_diagnostics(scope: "file", path: changedFile) → check for new warnings
-get_project_graph → understand if project reference changes make sense
-get_type_hierarchy(typeName) → verify inheritance changes are correct
+Grep "public " in the changed type's file      → review API surface changes without reading full files
+Grep the symbol name across *.cs              → understand impact of changes
+Grep ": IFoo" / base type / "override"        → verify all implementations are updated
+dotnet build --no-restore (scoped to project) → check for new warnings
+Grep "<ProjectReference" in *.csproj          → understand if project reference changes make sense
 ```
 
 ### Review Protocol
 
-1. `get_project_graph` — Understand solution context
-2. `get_diagnostics` on changed files — Check for new issues
-3. `find_references` on changed public APIs — Assess blast radius
-4. `get_public_api` on modified types — Verify API surface is intentional
+1. `dotnet list <project> reference` / Grep `<ProjectReference` — Understand solution context
+2. `dotnet build --no-restore` on changed projects — Check for new issues
+3. Grep changed public API names across `*.cs` — Assess blast radius
+4. Grep `public ` members in modified types — Verify API surface is intentional
 
 ## Response Patterns
 

@@ -98,18 +98,6 @@ Load these dotnet-claude-kit skills for context:
 - `instinct-system` — Capture corrections, instincts, and discoveries as persistent learning
 - `wrap-up` — Structured session handoff to `.claude/handoff.md`
 
-## MCP Tools
-
-> **Setup:** Install once globally with `dotnet tool install -g CWM.RoslynNavigator` and register with `claude mcp add --scope user cwm-roslyn-navigator -- cwm-roslyn-navigator --solution ${workspaceFolder}`. After that, these tools are available in every .NET project.
-
-Use `cwm-roslyn-navigator` tools to minimize token consumption:
-
-- **Before modifying a type** — Use `find_symbol` to locate it, `get_public_api` to understand its surface
-- **Before adding a reference** — Use `find_references` to understand existing usage
-- **To understand architecture** — Use `get_project_graph` to see project dependencies
-- **To find implementations** — Use `find_implementations` instead of grep for interface/abstract class implementations
-- **To check for errors** — Use `get_diagnostics` after changes
-
 ## Commands
 
 ```bash
@@ -132,7 +120,7 @@ dotnet format --verify-no-changes
 ## Workflow
 
 - **Plan first** — Enter plan mode for any non-trivial task (3+ steps or architecture decisions). Iterate until the plan is solid before writing code.
-- **Verify before done** — Run `dotnet test` after changes. Use `get_diagnostics` via MCP to catch warnings. Ask: "Would a staff engineer approve this?"
+- **Verify before done** — Run `dotnet test` after changes. Run `dotnet build` to catch new warnings. Ask: "Would a staff engineer approve this?"
 - **Fix bugs autonomously** — When given a bug report, investigate and fix it without hand-holding. Check logs, errors, failing tests — then resolve them.
 - **Stop and re-plan** — If implementation goes sideways, STOP and re-plan. Don't push through a broken approach.
 - **Use subagents** — Offload research, exploration, and parallel analysis to subagents. One task per subagent for focused execution.
