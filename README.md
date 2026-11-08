@@ -255,7 +255,10 @@ launchpad/
 ├── skills/             # knowledge and workflow skills (SKILL.md each)
 ├── knowledge/          # reference docs, anti-pattern catalogue, decision records
 ├── templates/          # starter CLAUDE.md files per project type
-└── hooks/              # format, guard, restore and pre-commit scripts
+├── hooks/              # format, guard, restore and pre-commit scripts
+├── docs/               # authoring guide for contributors
+├── AGENTS.md           # agent routing and skill maps
+└── CLAUDE.md           # instructions for developing launchpad itself
 ```
 
 The `knowledge/decisions/` folder records why the defaults are what they are — for example, Vertical Slice as the default architecture, Result over exceptions, and HybridCache as the default cache.

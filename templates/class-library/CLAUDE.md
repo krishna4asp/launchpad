@@ -116,7 +116,7 @@ IReadOnlyList<Token> Tokenize(ReadOnlySpan<char> input);
 
 ## Skills
 
-Load these dotnet-claude-kit skills for context:
+Load these launchpad skills for context:
 
 - `modern-csharp` -- C# 14 language features and idioms
 - `architecture-advisor` -- Architecture guidance for structuring the library

@@ -79,7 +79,7 @@ tests/
 
 ## Skills
 
-Load these dotnet-claude-kit skills for context:
+Load these launchpad skills for context:
 
 - `modern-csharp` — C# 14 language features and idioms
 - `architecture-advisor` — Run for new projects to choose the best architecture

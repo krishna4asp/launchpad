@@ -31,7 +31,6 @@ src/
     Common/
       Result.cs                          # Result pattern
       Behaviors/                         # Mediator pipeline behaviors
-      Extensions/                        # Shared extension methods
 
   Modules/
     [Module]/                            # e.g., Orders, Catalog, Identity
@@ -105,20 +104,9 @@ public sealed class OrdersController(ISender sender) : ApiControllerBase
 }
 ```
 
-### Feature File Convention
+### Feature Files
 
-Each feature operation lives in a single file using a static class wrapper:
-
-```csharp
-public static class CreateOrder
-{
-    public record Command(...) : IRequest<Result<Response>>;
-    public record Response(...);
-    public class Validator : AbstractValidator<Command> { }
-    internal class Handler(OrdersDbContext db, IMessageBus bus, TimeProvider clock)
-        : IRequestHandler<Command, Result<Response>> { }
-}
-```
+Each operation is one file: a static class holding its `Command`/`Query`, `Response`, `Validator` and `internal` handler (see the `vertical-slice` skill).
 
 ### Module Communication
 
@@ -137,61 +125,33 @@ public static class OrderCreatedHandler
     public static async Task HandleAsync(
         OrderCreated message, NotificationsDbContext db, CancellationToken ct)
     {
-        // Handle event...
-        await db.SaveChangesAsync(ct);
+        await db.SaveChangesAsync(ct); // handle the event, then persist
     }
 }
 ```
 
 ### Database Isolation
 
-Each module owns its own DbContext targeting a separate schema (or separate database):
-
-```csharp
-public class OrdersDbContext(DbContextOptions<OrdersDbContext> options) : DbContext(options)
-{
-    public DbSet<Order> Orders => Set<Order>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.HasDefaultSchema("orders");
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrdersDbContext).Assembly);
-    }
-}
-```
+Each module owns its DbContext, its schema (`modelBuilder.HasDefaultSchema("orders")`) and its migrations. No module reads another module's tables.
 
 ## Coding Standards
 
-- **C# 14 features** — Use primary constructors, collection expressions, `field` keyword, records, pattern matching
-- **File-scoped namespaces** — Always
-- **`var` for obvious types** — Use explicit types when the type isn't clear from context
-- **Naming** — PascalCase for public members, `_camelCase` for private fields, suffix async methods with `Async`
-- **No regions** — Ever
-- **No comments for obvious code** — Only comment "why", never "what"
-- **Module prefix** — Namespace all module types under `[ProjectName].Modules.[Module]`
-- **Internal by default** — Module handlers, consumers, and DbContexts should be `internal` where possible; expose only the module registration extension and controllers as `public` (MVC only discovers public controllers)
+- **C# 14** — primary constructors, collection expressions, records, pattern matching; file-scoped namespaces always
+- **Naming** — PascalCase for public members, camelCase for locals and parameters, `Async` suffix on async methods; no `_` prefix when using primary constructors
+- **Comments explain "why", never "what"** — no regions
+- **Module prefix** — namespace module types under `[ProjectName].Modules.[Module]`
+- **Internal by default** — handlers, consumers and DbContexts are `internal`; only the module registration extension and controllers are `public` (MVC only discovers public controllers)
 
 ## Skills
 
-Load these dotnet-claude-kit skills for context:
+Load these launchpad skills for context:
 
-- `modern-csharp` — C# 14 language features and idioms
-- `architecture-advisor` — Choose the internal architecture for each module
-- `vertical-slice` — Feature folder structure and handler patterns (if using VSA)
-- `clean-architecture` — Layered project structure with dependency inversion (if using CA)
-- `ddd` — Aggregates, value objects, domain events (if using DDD)
-- `project-structure` — Solution layout and project references
-- `controller-based-apis` — `[ApiController]` controllers, attribute routing, `ActionResult<T>`, OpenAPI metadata
-- `ef-core` — DbContext patterns, query optimization, migrations (one DbContext per module)
-- `messaging` — Wolverine/MassTransit, transactional outbox, integration events between modules
-- `dependency-injection` — Service registration patterns, module-scoped DI
-- `error-handling` — Result pattern, ProblemDetails
-- `testing` — xUnit v3, WebApplicationFactory, SQLite in-memory
-- `configuration` — Options pattern, per-module configuration sections
-- `logging` — Serilog, structured logging, health checks
-- `workflow-mastery` — Parallel worktrees, verification loops, subagent patterns, context discipline
-- `instinct-system` — Capture corrections, instincts, and discoveries as persistent learning
-- `wrap-up` — Structured session handoff to `.claude/handoff.md`
+- **Core:** `modern-csharp`, `architecture-advisor` (choose each module's internal architecture), `project-structure`
+- **Module internals:** `vertical-slice`, `clean-architecture` or `ddd` (whichever each module uses)
+- **APIs & data:** `controller-based-apis`, `ef-core` (one DbContext per module), `error-handling`, `configuration`, `dependency-injection`
+- **Between modules:** `messaging` — integration events and the transactional outbox
+- **Quality:** `testing`, `logging`
+- **Session:** `workflow-mastery`, `instinct-system`, `wrap-up`
 
 ## Commands
 
@@ -211,44 +171,29 @@ dotnet ef migrations add [Name] \
   --startup-project src/[ProjectName].Host \
   --context [Module]DbContext
 
-# Apply migrations for a specific module
-dotnet ef database update \
-  --project src/Modules/[Module]/[ProjectName].Modules.[Module] \
-  --startup-project src/[ProjectName].Host \
-  --context [Module]DbContext
-
 # Format check
 dotnet format --verify-no-changes
 ```
 
 ## Workflow
 
-- **Plan first** — Enter plan mode for any non-trivial task (3+ steps or architecture decisions). Iterate until the plan is solid before writing code.
-- **Verify before done** — Run `dotnet test` after changes. Run `dotnet build` to catch new warnings. Ask: "Would a staff engineer approve this?"
-- **Fix bugs autonomously** — When given a bug report, investigate and fix it without hand-holding. Check logs, errors, failing tests — then resolve them.
-- **Stop and re-plan** — If implementation goes sideways, STOP and re-plan. Don't push through a broken approach.
-- **Use subagents** — Offload research, exploration, and parallel analysis to subagents. One task per subagent for focused execution.
-- **Learn from corrections** — After any correction, capture the pattern in memory so the same mistake never recurs.
+- **Plan first** — plan any non-trivial task (3+ steps or an architecture decision) before writing code; if it goes sideways, stop and re-plan.
+- **Verify before done** — run `dotnet build` and `dotnet test` after changes. Ask: "Would a staff engineer approve this?"
+- **Fix bugs autonomously** — investigate logs, errors and failing tests, then resolve them.
+- **Use subagents** for research and parallel analysis, one task each; capture user corrections in memory.
 
 ## Anti-patterns
 
 Do NOT generate code that:
 
-- Defines endpoints in Program.cs — use `[ApiController]` controllers in each module, discovered by `app.MapControllers()`; Program.cs should never change when adding endpoints
+- Defines endpoints in Program.cs — use `[ApiController]` controllers in each module, discovered by `app.MapControllers()`
 - Puts business logic or `DbContext` calls in controllers — keep actions thin and dispatch to a handler
-- Uses `DateTime.Now` — use `TimeProvider` injection instead
-- Creates `new HttpClient()` — use `IHttpClientFactory`
-- Uses `async void` — always return `Task`
-- Blocks with `.Result` or `.Wait()` — await instead
-- Returns untyped `IActionResult` without `[ProducesResponseType]` — use `ActionResult<T>` for OpenAPI
-- Returns domain entities from endpoints — always map to response DTOs
-- Creates repository abstractions over EF Core — use the module's DbContext directly
-- Uses the EF Core InMemory provider for tests — use SQLite in-memory
-- Catches bare `Exception` — catch specific types, let the global handler catch the rest
+- Returns domain entities or untyped `IActionResult` — return response DTOs via `ActionResult<T>` with `[ProducesResponseType]`
+- Creates repository abstractions over EF Core, or a single "god" DbContext — each module uses its own DbContext directly
+- Uses `DateTime.Now`, `new HttpClient()`, `async void`, `.Result`/`.Wait()`, or bare `catch (Exception)` — use `TimeProvider`, `IHttpClientFactory`, `Task`, `await`, and the global handler
 - Uses string interpolation in log messages — use structured logging templates
-- References another module's DbContext or internal types — communicate via integration events only
+- Uses the EF Core InMemory provider for tests — use SQLite in-memory
+- References another module's DbContext, internal types or handlers — communicate via integration events only
 - Shares database tables between modules — each module owns its schema
-- Calls another module's handler directly — use Wolverine or MassTransit publish/send for cross-module communication
-- Puts business logic in the Shared project — the shared kernel contains only contracts, primitives, and cross-cutting infrastructure
-- Creates a single "god" DbContext for the entire application — each module gets its own DbContext
-- Publishes events without the transactional outbox — use Wolverine's built-in outbox or MassTransit's `AddEntityFrameworkOutbox` for reliability
+- Puts business logic in the Shared project — the shared kernel holds only contracts, primitives and cross-cutting infrastructure
+- Publishes events without the transactional outbox — use Wolverine's outbox or MassTransit's `AddEntityFrameworkOutbox`
