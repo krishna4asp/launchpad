@@ -15,7 +15,7 @@ The kit watches for four anti-patterns that Claude (and people) commonly write:
 | AP003 | `new HttpClient()`                                  | text scan       | yes       | optional               |
 | AP004 | `DateTime.Now` / `UtcNow`                           | text scan       | yes       | optional               |
 
-The obvious question, raised in [issue #23]: if a compiler-backed analyzer is
+The obvious question, raised in the upstream project ([issue #23]): if a compiler-backed analyzer is
 strictly more precise than text matching, why does the pre-commit hook match
 text at all?
 

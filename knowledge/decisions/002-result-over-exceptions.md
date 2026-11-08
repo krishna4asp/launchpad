@@ -50,7 +50,7 @@ The .NET ecosystem has traditionally relied on exceptions for all error handling
 
 ## Decision
 
-**dotnet-claude-kit uses the Result pattern as the default approach for handling expected failures. Exceptions are reserved for truly exceptional, unexpected situations.**
+**launchpad uses the Result pattern as the default approach for handling expected failures. Exceptions are reserved for truly exceptional, unexpected situations.**
 
 ### What constitutes an "expected failure"
 
@@ -71,7 +71,7 @@ The .NET ecosystem has traditionally relied on exceptions for all error handling
 
 ### Implementation approach
 
-dotnet-claude-kit does not mandate a specific Result library. The recommended pattern is a lightweight, project-owned `Result<T>` type:
+launchpad does not mandate a specific Result library. The recommended pattern is a lightweight, project-owned `Result<T>` type:
 
 ```csharp
 public sealed record Error(string Code, string Description)

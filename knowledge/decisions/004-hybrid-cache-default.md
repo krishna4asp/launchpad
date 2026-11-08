@@ -58,7 +58,7 @@ Problems with this pattern:
 
 ## Decision
 
-**HybridCache is the default caching abstraction in dotnet-claude-kit. Manual `IDistributedCache` patterns should be avoided for new code.**
+**HybridCache is the default caching abstraction in launchpad. Manual `IDistributedCache` patterns should be avoided for new code.**
 
 ### Default usage pattern
 
@@ -137,7 +137,7 @@ await cache.RemoveByTagAsync("orders", ct);
 
 ### Negative
 
-- **.NET 10+ only.** HybridCache is GA in .NET 10. Applications on .NET 8 LTS cannot use it without a preview package. (dotnet-claude-kit targets .NET 10, so this is acceptable.)
+- **.NET 10+ only.** HybridCache is GA in .NET 10. Applications on .NET 8 LTS cannot use it without a preview package. (launchpad targets .NET 10, so this is acceptable.)
 - **Less granular control.** For exotic caching scenarios (custom eviction policies, per-entry size limits), the abstraction may not expose the knobs you need.
 - **Dependency on Microsoft's implementation.** If a bug exists in HybridCache, you are dependent on Microsoft for a fix, whereas a hand-rolled cache-aside pattern is fully within your control.
 - **Learning curve.** Developers familiar with `IDistributedCache` must learn the new API (though it is simpler, not more complex).

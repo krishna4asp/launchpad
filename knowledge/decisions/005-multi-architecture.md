@@ -6,15 +6,15 @@ Accepted (supersedes [ADR-001](001-vsa-default.md))
 
 ## Context
 
-ADR-001 established Vertical Slice Architecture (VSA) as the single default architecture for dotnet-claude-kit. While VSA is an excellent choice for many applications, real-world .NET projects span a wide range of complexity and team contexts. Hardcoding a single default led to:
+ADR-001 established Vertical Slice Architecture (VSA) as the single default architecture for launchpad. While VSA is an excellent choice for many applications, real-world .NET projects span a wide range of complexity and team contexts. Hardcoding a single default led to:
 
 1. **Mismatched guidance** — Teams building complex domains with rich business logic were told to start with VSA, which does not provide the structural guardrails they need for aggregate boundaries and dependency inversion.
-2. **Incomplete coverage** — Clean Architecture and DDD are widely used in enterprise .NET development. dotnet-claude-kit had no skills for these architectures, leaving Claude without guidance when users worked in those patterns.
+2. **Incomplete coverage** — Clean Architecture and DDD are widely used in enterprise .NET development. launchpad had no skills for these architectures, leaving Claude without guidance when users worked in those patterns.
 3. **False simplicity** — Recommending one architecture for all projects is simpler to maintain but does not serve users well. Architecture is a context-dependent decision that requires understanding the project's domain, team, and constraints.
 
 ## Decision
 
-**dotnet-claude-kit supports four architectures as first-class options, guided by an architecture-advisor skill that recommends the best fit through a structured questionnaire.**
+**launchpad supports four architectures as first-class options, guided by an architecture-advisor skill that recommends the best fit through a structured questionnaire.**
 
 The four supported architectures:
 
@@ -36,10 +36,10 @@ The `architecture-advisor` skill:
 
 ### Positive
 
-- **Better real-world coverage** — Teams working with any of the four major patterns now have first-class guidance from dotnet-claude-kit.
+- **Better real-world coverage** — Teams working with any of the four major patterns now have first-class guidance from launchpad.
 - **Guided selection** — The architecture-advisor questionnaire prevents analysis paralysis and ensures architecture matches project context.
 - **Evolution awareness** — Documented migration paths (VSA → CA, CA → DDD, Monolith → Modular Monolith) help teams evolve their architecture as complexity grows.
-- **No architecture religion** — By supporting multiple patterns equally, dotnet-claude-kit avoids the trap of defending a single approach regardless of context.
+- **No architecture religion** — By supporting multiple patterns equally, launchpad avoids the trap of defending a single approach regardless of context.
 
 ### Negative
 

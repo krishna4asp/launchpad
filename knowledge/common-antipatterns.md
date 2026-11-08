@@ -1,6 +1,6 @@
 # Common Anti-patterns
 
-> Patterns that Claude tends to generate incorrectly. Every developer using dotnet-claude-kit should be protected from these mistakes.
+> Patterns that Claude tends to generate incorrectly. Every developer using launchpad should be protected from these mistakes.
 
 ## async void
 

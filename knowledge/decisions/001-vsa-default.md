@@ -4,11 +4,11 @@
 
 Superseded by [ADR-005](005-multi-architecture.md)
 
-> **Note:** VSA remains a fully supported architecture in dotnet-claude-kit. It is no longer the hardcoded default — the `architecture-advisor` skill now recommends the best fit based on project context. See ADR-005 for details.
+> **Note:** VSA remains a fully supported architecture in launchpad. It is no longer the hardcoded default — the `architecture-advisor` skill now recommends the best fit based on project context. See ADR-005 for details.
 
 ## Context
 
-dotnet-claude-kit needs a default architectural pattern for structuring .NET applications. The primary candidates are:
+launchpad needs a default architectural pattern for structuring .NET applications. The primary candidates are:
 
 - **Clean Architecture (CA):** Organizes code into concentric layers (Domain, Application, Infrastructure, Presentation). Widely taught and documented. Enforces dependency inversion via project references.
 - **Vertical Slice Architecture (VSA):** Organizes code by feature. Each feature is a self-contained slice containing its endpoint, handler, validation, data access, and DTOs. Cross-cutting concerns are shared via middleware, pipeline behaviors, or base classes.
@@ -30,11 +30,11 @@ We evaluated these patterns against the following criteria:
 
 ### Guiding principle
 
-dotnet-claude-kit is opinionated. We pick the best default for the majority of .NET applications and provide escape hatches for the rest. We do not present all options as equal.
+launchpad is opinionated. We pick the best default for the majority of .NET applications and provide escape hatches for the rest. We do not present all options as equal.
 
 ## Decision
 
-**Vertical Slice Architecture is the default architectural pattern in dotnet-claude-kit.**
+**Vertical Slice Architecture is the default architectural pattern in launchpad.**
 
 All templates, skills, agents, and code examples use VSA as the primary structure. Features are organized into feature folders, each containing:
 
@@ -49,12 +49,12 @@ Features/
       OrderMapper.cs            # Shared within the Orders feature only
 ```
 
-The handler approach (Mediator, Wolverine, or plain handler classes) is left to the user's choice. dotnet-claude-kit provides patterns for all three.
+The handler approach (Mediator, Wolverine, or plain handler classes) is left to the user's choice. launchpad provides patterns for all three.
 
 ### When to deviate
 
 - **Complex domains with rich business logic:** If you find yourself needing a shared Domain layer with aggregates, value objects, and domain events that multiple features depend on, introduce a `Domain` project. This is a natural evolution, not a contradiction of VSA.
-- **Modular monoliths:** Each module uses VSA internally. Modules communicate via explicit contracts (events, interfaces). dotnet-claude-kit supports this as an optional scaling pattern.
+- **Modular monoliths:** Each module uses VSA internally. Modules communicate via explicit contracts (events, interfaces). launchpad supports this as an optional scaling pattern.
 - **Shared infrastructure:** Cross-cutting concerns (auth, logging, error handling, persistence configuration) belong in a shared `Infrastructure` or `ServiceDefaults` project, not duplicated per feature.
 
 ## Consequences

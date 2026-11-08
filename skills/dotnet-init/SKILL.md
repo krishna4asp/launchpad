@@ -4,7 +4,7 @@ description: >
   Interactive project initialization. Detects project type, asks architecture
   questions, and generates a customized CLAUDE.md — no manual template copying.
   Use when: "init project", "setup project", "initialize", "new project setup",
-  "generate CLAUDE.md", "configure for dotnet-claude-kit", or starting Claude
+  "generate CLAUDE.md", "configure for launchpad", or starting Claude
   Code on a fresh or existing .NET codebase.
 ---
 
@@ -12,15 +12,15 @@ description: >
 
 ## What
 
-Interactively initializes a .NET project for use with dotnet-claude-kit. Detects the project type, asks targeted questions about architecture and tech stack, then generates a fully customized `CLAUDE.md` in the project root.
+Interactively initializes a .NET project for use with launchpad. Detects the project type, asks targeted questions about architecture and tech stack, then generates a fully customized `CLAUDE.md` in the project root.
 
 **No manual template copying required.**
 
 ## When
 
 - Starting a new .NET project with Claude Code
-- Adding dotnet-claude-kit to an existing project
-- "init project", "setup project", "generate CLAUDE.md", "configure for dotnet-claude-kit"
+- Adding launchpad to an existing project
+- "init project", "setup project", "generate CLAUDE.md", "configure for launchpad"
 
 ## How
 

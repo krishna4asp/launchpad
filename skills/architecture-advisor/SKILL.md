@@ -17,7 +17,7 @@ description: >
 1. **Ask before recommending** — Never prescribe an architecture without understanding the project. Run the questionnaire first to gather context about domain, team, lifetime, and constraints.
 2. **Right-size the architecture** — The best architecture is the simplest one that handles the project's actual complexity. CRUD apps do not need DDD. Startups do not need Clean Architecture. Match complexity to real requirements, not aspirations.
 3. **Architecture is not permanent** — Every architecture has an evolution path. Start simple and add structure when complexity demands it. Document the decision so the team knows when to evolve.
-4. **Four supported architectures** — dotnet-claude-kit provides first-class patterns for Vertical Slice Architecture (VSA), Clean Architecture (CA), DDD + Clean Architecture, and Modular Monolith. Each has specific strengths and trade-offs.
+4. **Four supported architectures** — launchpad provides first-class patterns for Vertical Slice Architecture (VSA), Clean Architecture (CA), DDD + Clean Architecture, and Modular Monolith. Each has specific strengths and trade-offs.
 
 ## The Architecture Questionnaire
 

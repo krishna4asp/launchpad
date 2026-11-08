@@ -31,7 +31,7 @@ Every data-driven .NET application needs a data access strategy. The .NET ecosys
 
 ## Decision
 
-**EF Core is the default ORM in dotnet-claude-kit. Use `DbContext` directly in feature handlers without a repository abstraction layer.**
+**EF Core is the default ORM in launchpad. Use `DbContext` directly in feature handlers without a repository abstraction layer.**
 
 ### Default usage pattern
 
@@ -107,7 +107,7 @@ public sealed class GetOrderReportHandler(IDbConnection connection)
 }
 ```
 
-### EF Core conventions enforced by dotnet-claude-kit
+### EF Core conventions enforced by launchpad
 
 1. **No repository pattern.** Use `DbContext` directly. `DbSet<T>` IS the repository.
 2. **`AsNoTracking()` for read-only queries.** Or better: project to DTOs with `Select()`.

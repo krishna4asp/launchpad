@@ -2,7 +2,7 @@
 
 > Last updated: 2026-07-22 -- .NET 10 / C# 14 (versions verified against NuGet.org)
 
-Curated packages that dotnet-claude-kit recommends by default. Every entry includes rationale and guidance on when NOT to use it.
+Curated packages that launchpad recommends by default. Every entry includes rationale and guidance on when NOT to use it.
 
 ## CRITICAL: Always Use Latest Stable Versions
 
