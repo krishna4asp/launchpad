@@ -40,10 +40,6 @@ All `Microsoft.AspNetCore.*`, `Microsoft.EntityFrameworkCore.*`, `Microsoft.Exte
 
 ## ASP.NET Core Breaking Changes
 
-### WithOpenApi Deprecated
-
-The `WithOpenApi()` extension methods are deprecated (diagnostic `ASPDEPR002`). This only affects Minimal API endpoints — controllers are unaffected. Use the built-in `AddOpenApi()` / `MapOpenApi()` instead, which generates OpenAPI documents natively without requiring the `Microsoft.AspNetCore.OpenApi` package's `WithOpenApi` extension.
-
 ### Microsoft.OpenApi Upgraded to 2.0
 
 The OpenAPI library used internally has been upgraded to `Microsoft.OpenApi` 2.0 GA. If you directly reference `Microsoft.OpenApi` types (e.g., in OpenAPI document transformers), review API changes in the 2.0 release.
@@ -231,11 +227,10 @@ OpenSSL-based cryptographic primitives are no longer supported on macOS. Use the
 1. Update `TargetFramework` to `net10.0`
 2. Update `global.json` SDK version to `10.0.100`
 3. Update all `Microsoft.*` package references to 10.0.x
-4. Search for `WithOpenApi()` calls and migrate to built-in OpenAPI
-5. Add `--framework` to any EF tooling scripts for multi-targeted projects
-6. Set explicit `Application Name` in connection strings if mixing EF + raw ADO.NET
-7. Check for `System.Linq.Async` NuGet references (now built-in)
-8. Review `System.Text.Json` serialized types for property name conflicts
-9. Verify SQLite `DateTime`/`DateTimeOffset` handling if using Microsoft.Data.Sqlite
-10. Test container builds (base image changed from Debian to Ubuntu)
-11. Update CI scripts if they reference `.sln` files explicitly (new default is `.slnx`)
+4. Add `--framework` to any EF tooling scripts for multi-targeted projects
+5. Set explicit `Application Name` in connection strings if mixing EF + raw ADO.NET
+6. Check for `System.Linq.Async` NuGet references (now built-in)
+7. Review `System.Text.Json` serialized types for property name conflicts
+8. Verify SQLite `DateTime`/`DateTimeOffset` handling if using Microsoft.Data.Sqlite
+9. Test container builds (base image changed from Debian to Ubuntu)
+10. Update CI scripts if they reference `.sln` files explicitly (new default is `.slnx`)
