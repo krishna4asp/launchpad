@@ -2,7 +2,7 @@
   "name": "launchpad",
   "version": "1.0.0",
   "metadata": {
-    "description": "A plugin that allows you to bootstrap applications using claude code"
+    "description": "Claude Code plugin marketplace for launchpad — .NET 10 skills, agents, rules, templates and hooks."
   },
   "owner": {
     "name": "Madhava Krishna Nali",
@@ -13,7 +13,7 @@
       "name": "launchpad",
       "version": "1.0.0",
       "license": "MIT",
-      "description": "skills, agents, slash commands, rules, and more for launching applications and performing system actions.",
+      "description": "Claude Code plugin for .NET 10 / C# 14: 42 skills (including 16 slash-command workflows), 9 specialist agents, 10 rules, 4 project templates and quality hooks for controller-based REST APIs on AWS.",
       "keywords": [
         "dotnet",
         "csharp",

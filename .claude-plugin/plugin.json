@@ -1,7 +1,8 @@
 {
   "name": "launchpad",
+  "displayName": "launchpad",
   "version": "1.0.0",
-  "description": "A plugin that allows you to launch applications and perform system actions.",
+  "description": "Claude Code plugin for .NET 10 / C# 14: 42 skills (including 16 slash-command workflows), 9 specialist agents, 10 rules, 4 project templates and quality hooks for controller-based REST APIs on AWS.",
   "author": {
     "name": "Madhava Krishna Nali",
     "email": "krishna4asp@gmail.com"
@@ -25,7 +26,6 @@
     "software development",
     "clean architecture",
     "spec driven development",
-    "system actions",
     "domain driven design",
     "software engineering",
     "code-review",

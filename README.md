@@ -2,7 +2,7 @@
 
 **A Claude Code plugin that teaches Claude to build .NET 10 applications the way a senior .NET engineer would.**
 
-43 skills • 9 specialist agents • 10 rules • 4 project templates • quality hooks
+42 skills • 9 specialist agents • 10 rules • 4 project templates • quality hooks
 
 Built for .NET 10 / C# 14, controller-based REST APIs, and AWS.
 
